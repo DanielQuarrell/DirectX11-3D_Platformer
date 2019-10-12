@@ -1,8 +1,24 @@
 #pragma once
 #include <Windows.h>
+#include "ExceptionHandler.h"
 
 class Window
 {
+public:
+	class Exception : public ExceptionHandler
+	{
+	public:
+		Exception(int line, const char* file, HRESULT hr) noexcept;
+		const char* what() const noexcept override;
+		const char* GetType() const noexcept override;
+		static std::string TranslateErrorCode(HRESULT hr) noexcept;
+		HRESULT GetErrorCode() const noexcept;
+		std::string GetErrorDescription() const noexcept;
+	private:
+		HRESULT hr;
+	};
+
+private:
 	class WindowClass
 	{
 	public:
