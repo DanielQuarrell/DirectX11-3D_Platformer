@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "Game.h"
 
 int CALLBACK WinMain(
 	HINSTANCE hInstance,
@@ -8,24 +8,7 @@ int CALLBACK WinMain(
 {
 	try
 	{
-		Window wnd(800, 300, "DirectX 3D Platformer");
-
-		MSG msg;
-		BOOL gResult;
-
-		//Message loop
-		while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (gResult == -1)
-		{
-			return -1;
-		}
-
-		return msg.wParam;
+		return Game{}.Start();
 	}
 	catch (const ExceptionHandler & e)
 	{

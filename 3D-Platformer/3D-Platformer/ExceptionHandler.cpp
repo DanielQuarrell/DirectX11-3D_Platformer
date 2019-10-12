@@ -17,7 +17,7 @@ const char* ExceptionHandler::what() const noexcept
 
 const char* ExceptionHandler::GetType() const noexcept
 {
-	return "Chili Exception";
+	return "Window Exception";
 }
 
 int ExceptionHandler::GetLine() const noexcept

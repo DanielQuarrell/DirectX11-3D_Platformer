@@ -75,6 +75,27 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
+std::optional<int> Window::ProcessMessages() noexcept
+{
+	MSG msg;
+
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		if (msg.message == WM_QUIT)
+		{
+			return (int)msg.wParam;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	//return empty optional to run normally
+	return {};
+}
+
+//Message handling
+
 //Installation to setup the pointer to the windows class instance
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
