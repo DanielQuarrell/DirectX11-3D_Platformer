@@ -12,6 +12,8 @@ int CALLBACK WinMain(
 
 		MSG msg;
 		BOOL gResult;
+
+		//Message loop
 		while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
 		{
 			TranslateMessage(&msg);

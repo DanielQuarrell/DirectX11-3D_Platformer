@@ -37,7 +37,7 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 }
 
 
-// Window Stuff
+// Window Initialisation
 Window::Window(int width, int height, const char* name)
 {
 	//Sets the entire window size based on the desired client region size
@@ -111,6 +111,26 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		case WM_CLOSE:
 			PostQuitMessage(0);
 			return 0;
+
+		//Clear keystate when window isnt focused
+		case WM_KILLFOCUS:
+			keyboard.ClearState();
+			break;
+
+		//Keyboard messages
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+			//Stops keys from being stuck by checking if it was pressed before pressing again - check bit 30
+			if (!(lParam & 0x40000000) || keyboard.AutorepeatIsEnabled()) // filter autorepeat
+			{
+				keyboard.OnKeyPressed(static_cast<unsigned char>(wParam));
+			}
+			break;
+
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			keyboard.OnKeyReleased(static_cast<unsigned char>(wParam));
+			break;
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
