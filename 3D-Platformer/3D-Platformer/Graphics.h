@@ -15,4 +15,5 @@ private:
 	IDXGISwapChain* pSwapChain = nullptr;
 	ID3D11DeviceContext* pContext = nullptr;
 	ID3D11RenderTargetView* pRenderTarget = nullptr;
+	ID3D11DepthStencilView* pDSV = nullptr;
 };
