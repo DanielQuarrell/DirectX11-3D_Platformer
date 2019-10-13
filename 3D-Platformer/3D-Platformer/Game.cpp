@@ -18,6 +18,12 @@ int Game::Start()
 
 void Game::UpdateFrame()
 {
-	wnd.Gfx().ClearBuffer(0.0f, 1.0f, 1.0f, 1.0f);
+	const float c = sin(timer.Peek()) / 2.0f + 0.5f;
+	wnd.Gfx().ClearBuffer(c, c, 1.0f, 1.0f);
+	wnd.Gfx().DrawTestTriangle(
+		timer.Peek(),
+		0.5f,
+		0.5f
+	);
 	wnd.Gfx().EndFrame();
 }
