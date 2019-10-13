@@ -18,5 +18,6 @@ int Game::Start()
 
 void Game::UpdateFrame()
 {
-
+	wnd.Gfx().ClearBuffer(0.0f, 1.0f, 1.0f, 1.0f);
+	wnd.Gfx().EndFrame();
 }

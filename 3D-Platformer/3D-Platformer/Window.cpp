@@ -66,8 +66,9 @@ Window::Window(int width, int height, const char* name)
 		throw Window::Exception(__LINE__, __FILE__, GetLastError());
 	}
 
-	// newly created windows start off as hidden
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+
+	pGfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
@@ -92,6 +93,11 @@ std::optional<int> Window::ProcessMessages() noexcept
 
 	//return empty optional to run normally
 	return {};
+}
+
+Graphics& Window::Gfx()
+{
+	return *pGfx;
 }
 
 //Message handling
