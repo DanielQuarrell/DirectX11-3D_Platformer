@@ -1,6 +1,5 @@
 #include "Graphics.h"
 #include <sstream>
-#include <d3dcompiler.h>
 #include <DirectXMath.h>
 
 #pragma comment(lib, "d3d11.lib")
@@ -85,6 +84,18 @@ Graphics::Graphics(HWND hWnd)
 	//Bind depth stensil view to OM
 	pContext->OMSetRenderTargets(1u, &pRenderTarget, pDSV);
 
+	//Configure viewport
+	D3D11_VIEWPORT viewport;
+
+	viewport.Width = 800;
+	viewport.Height = 600;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+
+	pContext->RSSetViewports(1u, &viewport);
+
 	pDSState->Release();
 	pDepthStencil->Release();
 }
@@ -125,6 +136,23 @@ void Graphics::ClearBuffer(float r, float g, float b, float a)
 	pContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
+void Graphics::DrawIndexed(UINT count)
+{
+	pContext->DrawIndexed(count, 0u, 0u);
+}
+
+void Graphics::SetProjection(DirectX::FXMMATRIX _projection)
+{
+	projection = _projection;
+}
+
+DirectX::XMMATRIX Graphics::GetProjection() const
+{
+	return projection;
+}
+
+
+/*
 void Graphics::DrawTestTriangle(float angle, float x, float y)
 {
 	//hResult for error checking
@@ -339,3 +367,4 @@ void Graphics::DrawTestTriangle(float angle, float x, float y)
 	pConstantBuffer->Release();
 	pConstantBuffer2->Release();
 }
+*/
