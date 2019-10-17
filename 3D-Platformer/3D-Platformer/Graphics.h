@@ -17,8 +17,11 @@ public:
 	void DrawIndexed(UINT count);
 	void SetProjection(DirectX::FXMMATRIX _projection);
 	DirectX::XMMATRIX GetProjection() const;
+	void SetCamera(DirectX::FXMMATRIX _camera);
+	DirectX::XMMATRIX GetCamera() const;
 private:
 	DirectX::XMMATRIX projection;
+	DirectX::XMMATRIX camera;
 	
 	//COM objects
 	ID3D11Device* pDevice = nullptr;

@@ -150,3 +150,13 @@ DirectX::XMMATRIX Graphics::GetProjection() const
 {
 	return projection;
 }
+
+void Graphics::SetCamera(DirectX::FXMMATRIX _camera)
+{
+	camera = _camera;
+}
+
+DirectX::XMMATRIX Graphics::GetCamera() const
+{
+	return camera;
+}
