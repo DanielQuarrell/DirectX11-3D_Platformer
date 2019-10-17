@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Timer.h"
+#include "Camera.h"
 
 class Game
 {
@@ -13,5 +14,6 @@ private:
 private:
 	Window wnd;
 	Timer timer;
+	Camera camera;
 	std::vector<std::unique_ptr<class Box>> boxes;
 };
