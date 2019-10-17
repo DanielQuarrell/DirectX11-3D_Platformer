@@ -8,17 +8,22 @@ void GameObject::Draw(Graphics& gfx) const noexcept
 	{
 		bindable->Bind(gfx);
 	}
+	for (auto& staticBindable : GetStaticBinds())
+	{
+		staticBindable->Bind(gfx);
+	}
+
 	//Draw object
 	gfx.DrawIndexed(pIndexBuffer->GetCount());
 }
 
-void GameObject::AddBind(std::unique_ptr<Bindable> bind) noexcept
+void GameObject::AddBind(std::unique_ptr<Bindable> bind)
 {
 	//MUST use AddIndexBuffer to bind index buffer
 	binds.push_back(std::move(bind));
 }
 
-void GameObject::AddIndexBuffer(std::unique_ptr<class IndexBuffer> indexBuffer) noexcept
+void GameObject::AddIndexBuffer(std::unique_ptr<class IndexBuffer> indexBuffer)
 {
 	//Don't add index buffer twice
 	pIndexBuffer = indexBuffer.get();

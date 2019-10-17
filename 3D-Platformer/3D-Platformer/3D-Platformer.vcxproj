@@ -161,6 +161,7 @@
     <ClInclude Include="Bindable.h" />
     <ClInclude Include="Box.h" />
     <ClInclude Include="ConstantBuffers.h" />
+    <ClInclude Include="GameObjectBase.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ExceptionHandler.h" />
     <ClInclude Include="GameObject.h" />

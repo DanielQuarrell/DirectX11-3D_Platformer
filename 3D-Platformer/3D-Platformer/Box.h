@@ -1,8 +1,8 @@
 #pragma once
-#include "GameObject.h"
+#include "GameObjectBase.h"
 #include <random>
 
-class Box : public GameObject
+class Box : public GameObjectBase<Box>
 {
 public:
 	Box(Graphics& gfx, std::mt19937& rng,
