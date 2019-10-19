@@ -4,18 +4,20 @@
 Game::Game() : wnd(800, 600, "DirectX 3D Platformer") 
 {
 	//Create boxes
-	std::mt19937 rng(std::random_device{}());
-	std::uniform_real_distribution<float> adist(0.0f, 3.1415f * 2.0f);
-	std::uniform_real_distribution<float> ddist(0.0f, 3.1415f * 2.0f);
-	std::uniform_real_distribution<float> odist(0.0f, 3.1415f * 0.3f);
-	std::uniform_real_distribution<float> rdist(6.0f, 20.0f);
+	/*
 	for (auto i = 0; i < 5; i++)
 	{
 		boxes.push_back(std::make_unique<Box>(
-			wnd.Gfx(), rng, adist,
-			ddist, odist, rdist
+			wnd.Gfx(), 
+			i * 3, - 5 + i, 0
 			));
 	}
+	*/
+
+	boxes.push_back(std::make_unique<Box>(
+		wnd.Gfx(),
+		0, -5, 0
+		));
 
 	//Set projection and camera
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
@@ -44,34 +46,61 @@ void Game::UpdateFrame()
 	auto dt = timer.Mark();
 	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f, 1.0f);
 
+	//Camera movement
 	float rMovement = 0;
 	float thetaMovement = 0;
+	float cubeZmov = 0;
 
 	if (wnd.keyboard.KeyIsPressed(VK_UP))
 	{
-		rMovement = -5 * dt;
+		rMovement = -5;
 	}
 	if (wnd.keyboard.KeyIsPressed(VK_DOWN))
 	{
-		rMovement = 5 * dt;
+		rMovement = 5;
 	}
 	if (wnd.keyboard.KeyIsPressed(VK_LEFT))
 	{
-		thetaMovement = -1 * dt;
+		thetaMovement = -1;
 	}
 	if (wnd.keyboard.KeyIsPressed(VK_RIGHT))
 	{
-		thetaMovement = 1 * dt;
+		thetaMovement = 1;
 	}
 
-	camera.SetMovementTransform(rMovement, thetaMovement);
+	camera.SetMovementTransform(rMovement * dt, thetaMovement * dt);
+
+	//Cube movement
+
+	float verticle = 0;
+	float horizontal = 0;
+
+	if (wnd.keyboard.KeyIsPressed(0x57)) //W
+	{
+		verticle = -1;
+	}
+	if (wnd.keyboard.KeyIsPressed(0x53)) //S
+	{
+		verticle = 1;
+	}
+	if (wnd.keyboard.KeyIsPressed(0x41)) //A
+	{
+		horizontal = -1;
+	}
+	if (wnd.keyboard.KeyIsPressed(0x44)) //D
+	{
+		horizontal = 1;
+	}
+	boxes[0].get()->SetVelocity(verticle * 10, 0.0f, horizontal * 10);
+	boxes[0].get()->SetEularZ(thetaMovement * dt);
+
 
 
 	wnd.Gfx().SetCamera(camera.GetMatrix());
 
 	for (auto& b : boxes)
 	{
-		b->Update(dt * 0);
+		b->Update(dt);
 		b->Draw(wnd.Gfx());
 	}
 	

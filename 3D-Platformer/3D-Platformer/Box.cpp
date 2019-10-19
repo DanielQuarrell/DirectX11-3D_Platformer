@@ -9,48 +9,30 @@
 #include "VertexBuffer.h"
 #include "VertexShader.h"
 
-Box::Box(Graphics& gfx,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& adist,
-	std::uniform_real_distribution<float>& ddist,
-	std::uniform_real_distribution<float>& odist,
-	std::uniform_real_distribution<float>& rdist)
-	:
-	r(rdist(rng)),
-	droll(ddist(rng)),
-	dpitch(ddist(rng)),
-	dyaw(ddist(rng)),
-	dphi(odist(rng)),
-	dtheta(odist(rng)),
-	dchi(odist(rng)),
-	chi(adist(rng)),
-	theta(adist(rng)),
-	phi(adist(rng))
+Box::Box(Graphics& gfx, float _x, float _y, float _z) :
+	xPos(_x),
+	yPos(_y),
+	zPos(_z)
 {
 	if (!IsStaticInitialised())
 	{
 		//Structure for vertex
 		struct Vertex
 		{
-			struct
-			{
-				float x;
-				float y;
-				float z;
-			} pos;
+			DirectX::XMFLOAT3 pos;
 		};
 
 		//Create the vertex buffer
 		const std::vector<Vertex> vertices =
 		{
-			{-1.0f,-1.0f,-1.0f},
-			{ 1.0f,-1.0f,-1.0f},
-			{-1.0f, 1.0f,-1.0f},
-			{ 1.0f, 1.0f,-1.0f},
-			{-1.0f,-1.0f, 1.0f},
-			{ 1.0f,-1.0f, 1.0f},
-			{-1.0f, 1.0f, 1.0f},
-			{ 1.0f, 1.0f, 1.0f},
+			{DirectX::XMFLOAT3(-1.0f,-1.0f,-1.0f)},
+			{DirectX::XMFLOAT3( 1.0f,-1.0f,-1.0f)},
+			{DirectX::XMFLOAT3(-1.0f, 1.0f,-1.0f)},
+			{DirectX::XMFLOAT3( 1.0f, 1.0f,-1.0f)},
+			{DirectX::XMFLOAT3(-1.0f,-1.0f, 1.0f)},
+			{DirectX::XMFLOAT3( 1.0f,-1.0f, 1.0f)},
+			{DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f)},
+			{DirectX::XMFLOAT3( 1.0f, 1.0f, 1.0f)},
 		};
 
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
@@ -120,19 +102,46 @@ Box::Box(Graphics& gfx,
 	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
 }
 
+void Box::SetVelocity(float _x, float _y, float _z)
+{
+	xVel = _x;
+	yVel = _y;
+	zVel = _z;
+}
+
+void Box::SetPosition(float _x, float _y, float _z)
+{
+	xPos = _x;
+	yPos = _y;
+	zPos = _z;
+}
+
+void Box::SetEularX(float angle)
+{
+	eularX += angle;
+}
+
+void Box::SetEularY(float angle)
+{
+	eularY += angle;
+}
+
+void Box::SetEularZ(float angle)
+{
+	eularZ += angle;
+}
+
 void Box::Update(float dt) noexcept
 {
-	roll += droll * dt;
-	pitch += dpitch * dt;
-	yaw += dyaw * dt;
-	theta += dtheta * dt;
-	phi += dphi * dt;
-	chi += dchi * dt;
+	xPos += xVel * dt;
+	yPos += yVel * dt;
+	zPos += zVel * dt;
 }
 
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
-	return DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, roll) *
-		DirectX::XMMatrixTranslation(r, 0.0f, 0.0f) *
-		DirectX::XMMatrixRotationRollPitchYaw(theta, phi, chi);
+	return 	DirectX::XMMatrixTranslation(xPos, yPos, zPos);
+		DirectX::XMMatrixRotationX(eularX);
+		DirectX::XMMatrixRotationY(eularY);
+		DirectX::XMMatrixRotationZ(eularZ);
 }

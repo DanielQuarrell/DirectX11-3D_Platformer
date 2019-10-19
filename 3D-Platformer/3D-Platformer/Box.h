@@ -1,31 +1,27 @@
 #pragma once
 #include "GameObjectBase.h"
-#include <random>
 
 class Box : public GameObjectBase<Box>
 {
 public:
-	Box(Graphics& gfx, std::mt19937& rng,
-		std::uniform_real_distribution<float>& adist,
-		std::uniform_real_distribution<float>& ddist,
-		std::uniform_real_distribution<float>& odist,
-		std::uniform_real_distribution<float>& rdist);
+	Box(Graphics& gfx, float _x, float _y, float _z);
+	void SetVelocity(float _x, float _y, float _z);
+	void SetPosition(float x, float y, float z);
+	void SetEularX(float angle);
+	void SetEularY(float angle);
+	void SetEularZ(float angle);
 	void Update(float dt) noexcept override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 private:
-	//Positional
-	float r;
-	float roll = 0.0f;
-	float pitch = 0.0f;
-	float yaw = 0.0f;
-	float theta;
-	float phi;
-	float chi;
-	//Angular Speed (delta/s)
-	float droll;
-	float dpitch;
-	float dyaw;
-	float dtheta;
-	float dphi;
-	float dchi;
+	float xVel = 0.0f;
+	float yVel = 0.0f;
+	float zVel = 0.0f;
+	//Position
+	float xPos = 0.0f;
+	float yPos = 0.0f;
+	float zPos = 0.0f;
+	//Rotation
+	float eularX = 0.0f;
+	float eularY = 0.0f;
+	float eularZ = 0.0f;
 };
