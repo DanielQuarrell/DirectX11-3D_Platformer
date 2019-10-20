@@ -19,31 +19,42 @@ Box::Box(Graphics& gfx, float _x, float _y, float _z) :
 		//Structure for vertex
 		struct Vertex
 		{
-			DirectX::XMFLOAT3 pos;
+			struct
+			{
+				float x;
+				float y;
+				float z;
+			}pos;
+
+			struct
+			{
+				float u;
+				float v;
+			};
 		};
 
 		//Create the vertex buffer
 		const std::vector<Vertex> vertices =
 		{
-			{DirectX::XMFLOAT3(-1.0f,-1.0f,-1.0f)},
-			{DirectX::XMFLOAT3( 1.0f,-1.0f,-1.0f)},
-			{DirectX::XMFLOAT3(-1.0f, 1.0f,-1.0f)},
-			{DirectX::XMFLOAT3( 1.0f, 1.0f,-1.0f)},
-			{DirectX::XMFLOAT3(-1.0f,-1.0f, 1.0f)},
-			{DirectX::XMFLOAT3( 1.0f,-1.0f, 1.0f)},
-			{DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f)},
-			{DirectX::XMFLOAT3( 1.0f, 1.0f, 1.0f)},
+			{-1.0f,-1.0f,-1.0f},
+			{ 1.0f,-1.0f,-1.0f},
+			{-1.0f, 1.0f,-1.0f},
+			{ 1.0f, 1.0f,-1.0f},
+			{-1.0f,-1.0f, 1.0f},
+			{ 1.0f,-1.0f, 1.0f},
+			{-1.0f, 1.0f, 1.0f},
+			{ 1.0f, 1.0f, 1.0f},
 		};
 
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
 
 		//Create vertex shader
-		auto pVertexShader = std::make_unique<VertexShader>(gfx, L"VertexShader.cso");
+		auto pVertexShader = std::make_unique<VertexShader>(gfx, L"ColorIndexVS.cso");
 		auto pVertexShaderBytecode = pVertexShader->GetBytecode();
 		AddStaticBind(std::move(pVertexShader));
 
 		//Create pixel shader
-		AddStaticBind(std::make_unique<PixelShader>(gfx, L"PixelShader.cso"));
+		AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndexPS.cso"));
 
 		//Create index buffer
 		const std::vector<unsigned short> indices =
@@ -140,8 +151,8 @@ void Box::Update(float dt) noexcept
 
 DirectX::XMMATRIX Box::GetTransformXM() const noexcept
 {
-	return 	DirectX::XMMatrixTranslation(xPos, yPos, zPos);
-		DirectX::XMMatrixRotationX(eularX);
-		DirectX::XMMatrixRotationY(eularY);
+	return 	DirectX::XMMatrixTranslation(xPos, yPos, zPos) *
+		DirectX::XMMatrixRotationX(eularX) *
+		DirectX::XMMatrixRotationY(eularY) *
 		DirectX::XMMatrixRotationZ(eularZ);
 }

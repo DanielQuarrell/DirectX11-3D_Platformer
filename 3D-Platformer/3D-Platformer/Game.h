@@ -15,5 +15,5 @@ private:
 	Window wnd;
 	Timer timer;
 	Camera camera;
-	std::vector<std::unique_ptr<class Box>> boxes;
+	std::vector<std::unique_ptr<class TexturedBox>> boxes;
 };
