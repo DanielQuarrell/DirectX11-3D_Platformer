@@ -24,4 +24,6 @@ private:
 	float eularX = 0.0f;
 	float eularY = 0.0f;
 	float eularZ = 0.0f;
+	//Model transform
+	DirectX::XMFLOAT3X3 modelTransform;
 };

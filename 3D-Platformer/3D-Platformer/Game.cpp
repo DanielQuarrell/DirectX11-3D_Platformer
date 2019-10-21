@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "TexturedBox.h"
 
-Game::Game() : wnd(800, 600, "DirectX 3D Platformer") 
+Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 {
 	//Create boxes
 	/*
@@ -13,10 +13,10 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 			));
 	}
 	*/
-
+	
 	boxes.push_back(std::make_unique<TexturedBox>(
 		wnd.Gfx(),
-		0, 2, 0
+		0, -2, 0
 		));
 
 	//Set projection and camera
@@ -68,7 +68,8 @@ void Game::UpdateFrame()
 		thetaMovement = 1;
 	}
 
-	//camera.SetMovementTransform(rMovement * dt, thetaMovement * dt);
+	camera.SetMovementTransform(rMovement * dt, thetaMovement * dt);
+	wnd.Gfx().SetCamera(camera.GetMatrix());
 
 	//Cube movement
 
@@ -92,11 +93,6 @@ void Game::UpdateFrame()
 		horizontal = 1;
 	}
 	boxes[0].get()->SetVelocity(verticle * 10, 0.0f, horizontal * 10);
-	boxes[0].get()->SetEularY(thetaMovement * dt);
-
-
-
-	wnd.Gfx().SetCamera(camera.GetMatrix());
 
 	for (auto& b : boxes)
 	{

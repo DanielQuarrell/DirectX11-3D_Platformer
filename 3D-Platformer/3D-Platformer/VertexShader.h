@@ -1,6 +1,6 @@
 #pragma once
 #include "Bindable.h"
-#include <String>
+#include <string>
 
 class VertexShader : public Bindable
 {

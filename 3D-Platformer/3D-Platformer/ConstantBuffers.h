@@ -11,7 +11,8 @@ public:
 	{
 		//In order to update a constant buffer you need to map a resourse
 		//This locks the constant buffer and gets a pointer to the memory
-		D3D11_MAPPED_SUBRESOURCE msr;
+
+		D3D11_MAPPED_SUBRESOURCE msr = {};
 		GetContext(gfx)->Map(
 			pConstantBuffer, 0u,
 			D3D11_MAP_WRITE_DISCARD, 0u,
@@ -24,9 +25,9 @@ public:
 	}
 
 	//Constructor with constant buffer initialisation
-	ConstantBuffer(Graphics& gfx, const C& consts)
+	ConstantBuffer(Graphics& gfx, const C& consts, UINT slot = 0u)
 	{
-		D3D11_BUFFER_DESC constantBufferDesc;
+		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;						//Bind to the vertex shader file
 		constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;									//CPU write, GPU read
 		constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;						//CPU write as its going to be updated every frame
@@ -41,9 +42,9 @@ public:
 	}
 
 	//Constructor without constant buffer initialisation
-	ConstantBuffer(Graphics& gfx)
+	ConstantBuffer(Graphics& gfx, UINT slot = 0u)
 	{
-		D3D11_BUFFER_DESC constantBufferDesc;
+		D3D11_BUFFER_DESC constantBufferDesc = {};
 		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;						//Bind to the vertex shader file
 		constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;									//CPU write, GPU read
 		constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;						//CPU write as its going to be updated every frame
@@ -65,6 +66,7 @@ public:
 
 protected:
 	ID3D11Buffer* pConstantBuffer = nullptr;
+	UINT slot;
 };
 
 //Override for vertex buffer
@@ -73,13 +75,14 @@ class VertexConstantBuffer : public ConstantBuffer<C>
 {
 	//Uses 'using' to gain access to functions with templates
 	using ConstantBuffer<C>::pConstantBuffer;
+	using ConstantBuffer<C>::slot;
 	using Bindable::GetContext;
 public:
 	using ConstantBuffer<C>::ConstantBuffer;
 	void Bind(Graphics& gfx) noexcept override
 	{
 		//Bind constant buffer to vertex shader
-		GetContext(gfx)->VSSetConstantBuffers(0u, 1u, &pConstantBuffer);
+		GetContext(gfx)->VSSetConstantBuffers(slot, 1u, &pConstantBuffer);
 	}
 };
 
@@ -89,12 +92,13 @@ class PixelConstantBuffer : public ConstantBuffer<C>
 {
 	//Uses 'using' to gain access to parent variables and functions with templates
 	using ConstantBuffer<C>::pConstantBuffer;
+	using ConstantBuffer<C>::slot;
 	using Bindable::GetContext;
 public:
 	using ConstantBuffer<C>::ConstantBuffer;
 	void Bind(Graphics& gfx) noexcept override
 	{
 		//Bind constant buffer to pixel shader
-		GetContext(gfx)->PSSetConstantBuffers(0u, 1u, &pConstantBuffer);
+		GetContext(gfx)->PSSetConstantBuffers(slot, 1u, &pConstantBuffer);
 	}
 };
