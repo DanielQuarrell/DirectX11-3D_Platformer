@@ -20,43 +20,81 @@ TexturedBox::TexturedBox(Graphics& gfx)
 			Vertex() {};
 			Vertex(
 			float x, float y, float z,
-			float u, float v) :
+			float u, float v):
 			pos(x, y, z), texCoord(u, v){}
 
 			DirectX::XMFLOAT3 pos;
 			DirectX::XMFLOAT2 texCoord;
-			DirectX::XMFLOAT3 n;
+			DirectX::XMFLOAT3 normals;
 		};
 
 		//Create the vertex buffer
 		const float side = 1.0f;
 		std::vector<Vertex> vertices =
 		{
-			Vertex(-side,-side,-side, 2.0f / 3.0f, 0.0f / 4.0f ),
-			Vertex( side,-side,-side, 1.0f / 3.0f, 0.0f / 4.0f ),
-			Vertex(-side, side,-side, 2.0f / 3.0f, 1.0f / 4.0f ),
-			Vertex( side, side,-side, 1.0f / 3.0f, 1.0f / 4.0f ),
-			Vertex(-side,-side, side, 2.0f / 3.0f, 3.0f / 4.0f ),
-			Vertex( side,-side, side, 1.0f / 3.0f, 3.0f / 4.0f ),
-			Vertex(-side, side, side, 2.0f / 3.0f, 2.0f / 4.0f ),
-			Vertex( side, side, side, 1.0f / 3.0f, 2.0f / 4.0f ),
-			Vertex(-side,-side,-side, 2.0f / 3.0f, 4.0f / 4.0f ),
-			Vertex( side,-side,-side, 1.0f / 3.0f, 4.0f / 4.0f ),
-			Vertex(-side,-side,-side, 3.0f / 3.0f, 1.0f / 4.0f ),
-			Vertex(-side,-side, side, 3.0f / 3.0f, 2.0f / 4.0f ),
-			Vertex( side,-side,-side, 0.0f / 3.0f, 1.0f / 4.0f ),
-			Vertex( side,-side, side, 0.0f / 3.0f, 2.0f / 4.0f ),
+			// Front Face
+			Vertex(-1.0f, -1.0f, -1.0f, 0.0f,  1.0f),
+			Vertex(-1.0f,  1.0f, -1.0f, 0.0f,  0.0f),
+			Vertex(1.0f,   1.0f, -1.0f, 1.0f,  0.0f),
+			Vertex(1.0f,  -1.0f, -1.0f, 1.0f,  1.0f),
+											   
+			// Back Face					   
+			Vertex(-1.0f, -1.0f,  1.0f, 1.0f,  1.0f),
+			Vertex( 1.0f, -1.0f,  1.0f, 0.0f,  1.0f),
+			Vertex( 1.0f,  1.0f,  1.0f, 0.0f,  0.0f),
+			Vertex(-1.0f,  1.0f,  1.0f, 1.0f,  0.0f),
+													
+			// Top Face								
+			Vertex(-1.0f,  1.0f, -1.0f,  0.0f, 1.0f),
+			Vertex(-1.0f,  1.0f,  1.0f,  0.0f, 0.0f),
+			Vertex( 1.0f,  1.0f,  1.0f,  1.0f, 0.0f),
+			Vertex( 1.0f,  1.0f, -1.0f,  1.0f, 1.0f),
+										 
+			// Bottom Face				 
+			Vertex(-1.0f, -1.0f, -1.0f,  1.0f, 1.0f),
+			Vertex( 1.0f, -1.0f, -1.0f,  0.0f, 1.0f),
+			Vertex( 1.0f, -1.0f,  1.0f,  0.0f, 0.0f),
+			Vertex(-1.0f, -1.0f,  1.0f,  1.0f, 0.0f),
+										 
+			// Left Face				 
+			Vertex(-1.0f, -1.0f,  1.0f,  0.0f, 1.0f),
+			Vertex(-1.0f,  1.0f,  1.0f,  0.0f, 0.0f),
+			Vertex(-1.0f,  1.0f, -1.0f,  1.0f, 0.0f),
+			Vertex(-1.0f, -1.0f, -1.0f,  1.0f, 1.0f),
+										 
+			// Right Face				 
+			Vertex( 1.0f, -1.0f, -1.0f,  0.0f, 1.0f),
+			Vertex( 1.0f,  1.0f, -1.0f,  0.0f, 0.0f),
+			Vertex( 1.0f,  1.0f,  1.0f,  1.0f, 0.0f),
+			Vertex( 1.0f, -1.0f,  1.0f,  1.0f, 1.0f),
 		};
 
 		//Create index buffer
 		std::vector<unsigned short> indices =
 		{
-			0, 2, 1,   2, 3, 1,
-			4, 8, 5,   5, 8, 9,
-			2, 6, 3,   3, 6, 7,
-			4, 5, 7,   4, 7, 6,
-			2, 10,11,  2, 11,6,
-			12,3, 7,   12,7, 13
+			// Front Face
+			0,  1,  2,
+			0,  2,  3,
+
+			// Back Face
+			4,  5,  6,
+			4,  6,  7,
+
+			// Top Face
+			8,  9, 10,
+			8, 10, 11,
+
+			// Bottom Face
+			12, 13, 14,
+			12, 14, 15,
+
+			// Left Face
+			16, 17, 18,
+			16, 18, 19,
+
+			// Right Face
+			20, 21, 22,
+			20, 22, 23
 		};
 
 		//Calculate normals for flat object
@@ -69,11 +107,11 @@ TexturedBox::TexturedBox(Graphics& gfx)
 			const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
 			const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
 
-			const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::operator-(p1, p0), DirectX::operator-(p2, p0)));
+			const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0)));
 
-			XMStoreFloat3(&v0.n, n);
-			XMStoreFloat3(&v1.n, n);
-			XMStoreFloat3(&v2.n, n);
+			XMStoreFloat3(&v0.normals, n);
+			XMStoreFloat3(&v1.normals, n);
+			XMStoreFloat3(&v2.normals, n);
 		}
 
 		//Bind vertex buffer
@@ -98,7 +136,7 @@ TexturedBox::TexturedBox(Graphics& gfx)
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			{ "Normal",  0,DXGI_FORMAT_R32G32B32_FLOAT,0,20,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		};
 		//Bind Input vertex layout
 		AddStaticBind(std::make_unique<InputLayout>(gfx, inputElementDesc, pVertexShaderBytecode));
