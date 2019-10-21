@@ -14,10 +14,7 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 	}
 	*/
 	
-	boxes.push_back(std::make_unique<TexturedBox>(
-		wnd.Gfx(),
-		0, -2, 0
-		));
+	boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx()));
 
 	//Set projection and camera
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
@@ -68,7 +65,7 @@ void Game::UpdateFrame()
 		thetaMovement = 1;
 	}
 
-	camera.SetMovementTransform(rMovement * dt, thetaMovement * dt);
+	//camera.SetMovementTransform(rMovement * dt, thetaMovement * dt);
 	wnd.Gfx().SetCamera(camera.GetMatrix());
 
 	//Cube movement
@@ -93,6 +90,7 @@ void Game::UpdateFrame()
 		horizontal = 1;
 	}
 	boxes[0].get()->SetVelocity(verticle * 10, 0.0f, horizontal * 10);
+	boxes[0].get()->SetEularY(thetaMovement * dt);
 
 	for (auto& b : boxes)
 	{

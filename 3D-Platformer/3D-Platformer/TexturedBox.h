@@ -4,7 +4,7 @@
 class TexturedBox : public GameObjectBase<TexturedBox>
 {
 public:
-	TexturedBox(Graphics& gfx, float _x, float _y, float _z);
+	TexturedBox(Graphics& gfx);
 	void SetVelocity(float _x, float _y, float _z);
 	void SetPosition(float x, float y, float z);
 	void SetEularX(float angle);
@@ -21,9 +21,9 @@ private:
 	float yPos = 0.0f;
 	float zPos = 0.0f;
 	//Rotation
-	float eularX = 0.0f;
-	float eularY = 0.0f;
-	float eularZ = 0.0f;
+	float xRot = 0.0f;
+	float yRot = 0.0f;
+	float zRot = 0.0f;
 	//Model transform
 	DirectX::XMFLOAT3X3 modelTransform;
 };

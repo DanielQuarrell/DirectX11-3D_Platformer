@@ -1,19 +1,33 @@
-static const float3 direction = { 0.5f, 0.5f, -1.0f };
-static const float3 ambient = { 0.2f, 0.2f, 0.2f };
-static const float4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-Texture2D tex;
+static const float3 lightDirection = { 0.2f, 0.2f, 0.2f };
+static const float4 ambient = { 0.05, 0.05f, 0.05f, 1.0f };
+static const float4 diffuseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+Texture2D objTex;
 SamplerState splr;
 
-float4 main(float3 n : Normal, float2 tc : TexCoord) : SV_Target
+float4 main(float4 pos : SV_Position, float2 tex : TexCoord, float3 normal: Normal) : SV_TARGET
 {
-	n = normalize(n);
+	float4 textureColor = objTex.Sample(splr, tex);
 
-	float4 texDiffuse = tex.Sample(splr, tc);
 	float3 finalColor;
 
-	finalColor = diffuse * ambient;
-	finalColor += saturate(dot(direction, n) * texDiffuse);
+	finalColor = textureColor * ambient;
+	finalColor += saturate(dot(lightDirection, normal) * diffuseColor * textureColor);
 
-	return float4(finalColor, 1.0f);
+	return float4(finalColor, textureColor.a);
 }
+
+/*
+float4 textureColor;
+float lightIntensity;
+float4 finalColor;
+
+textureColor = objTex.Sample(splr, tex);
+
+lightIntensity = saturate(dot(normal, lightDirection));
+
+finalColor = saturate(diffuseColor * lightIntensity);
+
+finalColor = finalColor * textureColor;
+*/

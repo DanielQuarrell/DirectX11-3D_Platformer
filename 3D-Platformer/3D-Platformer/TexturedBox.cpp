@@ -10,10 +10,7 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-TexturedBox::TexturedBox(Graphics& gfx, float _x, float _y, float _z) :
-	xPos(_x),
-	yPos(_y),
-	zPos(_z)
+TexturedBox::TexturedBox(Graphics& gfx)
 {
 	if (!IsStaticInitialised())
 	{
@@ -140,17 +137,17 @@ void TexturedBox::SetPosition(float _x, float _y, float _z)
 
 void TexturedBox::SetEularX(float angle)
 {
-	eularX += angle;
+	xRot += angle;
 }
 
 void TexturedBox::SetEularY(float angle)
 {
-	eularY += angle;
+	yRot += angle;
 }
 
 void TexturedBox::SetEularZ(float angle)
 {
-	eularZ += angle;
+	zRot += angle;
 }
 
 void TexturedBox::Update(float dt) noexcept
@@ -163,8 +160,6 @@ void TexturedBox::Update(float dt) noexcept
 DirectX::XMMATRIX TexturedBox::GetTransformXM() const noexcept
 {
 	return DirectX::XMLoadFloat3x3(&modelTransform) *
-		DirectX::XMMatrixTranslation(xPos, yPos, zPos) *
-		DirectX::XMMatrixRotationX(eularX) *
-		DirectX::XMMatrixRotationY(eularY) *
-		DirectX::XMMatrixRotationZ(eularZ);
+		DirectX::XMMatrixRotationRollPitchYaw(xRot, yRot, zRot) *
+		DirectX::XMMatrixTranslation(xPos, yPos, zPos);
 }
