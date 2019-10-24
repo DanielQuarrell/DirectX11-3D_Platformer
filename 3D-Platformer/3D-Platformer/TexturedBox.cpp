@@ -10,7 +10,11 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-TexturedBox::TexturedBox(Graphics& gfx)
+TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z) :
+	textureName(_textureName),
+	xPos(_x),
+	yPos(_y),
+	zPos(_z)
 {
 	if (!IsStaticInitialised())
 	{
@@ -29,44 +33,44 @@ TexturedBox::TexturedBox(Graphics& gfx)
 		};
 
 		//Create the vertex buffer
-		const float side = 1.0f;
+		const float side = 0.5f;
 		std::vector<Vertex> vertices =
 		{
 			// Front Face
-			Vertex(-1.0f, -1.0f, -1.0f, 0.0f,  1.0f),
-			Vertex(-1.0f,  1.0f, -1.0f, 0.0f,  0.0f),
-			Vertex(1.0f,   1.0f, -1.0f, 1.0f,  0.0f),
-			Vertex(1.0f,  -1.0f, -1.0f, 1.0f,  1.0f),
-											   
-			// Back Face					   
-			Vertex(-1.0f, -1.0f,  1.0f, 1.0f,  1.0f),
-			Vertex( 1.0f, -1.0f,  1.0f, 0.0f,  1.0f),
-			Vertex( 1.0f,  1.0f,  1.0f, 0.0f,  0.0f),
-			Vertex(-1.0f,  1.0f,  1.0f, 1.0f,  0.0f),
-													
-			// Top Face								
-			Vertex(-1.0f,  1.0f, -1.0f,  0.0f, 1.0f),
-			Vertex(-1.0f,  1.0f,  1.0f,  0.0f, 0.0f),
-			Vertex( 1.0f,  1.0f,  1.0f,  1.0f, 0.0f),
-			Vertex( 1.0f,  1.0f, -1.0f,  1.0f, 1.0f),
-										 
-			// Bottom Face				 
-			Vertex(-1.0f, -1.0f, -1.0f,  1.0f, 1.0f),
-			Vertex( 1.0f, -1.0f, -1.0f,  0.0f, 1.0f),
-			Vertex( 1.0f, -1.0f,  1.0f,  0.0f, 0.0f),
-			Vertex(-1.0f, -1.0f,  1.0f,  1.0f, 0.0f),
-										 
-			// Left Face				 
-			Vertex(-1.0f, -1.0f,  1.0f,  0.0f, 1.0f),
-			Vertex(-1.0f,  1.0f,  1.0f,  0.0f, 0.0f),
-			Vertex(-1.0f,  1.0f, -1.0f,  1.0f, 0.0f),
-			Vertex(-1.0f, -1.0f, -1.0f,  1.0f, 1.0f),
-										 
-			// Right Face				 
-			Vertex( 1.0f, -1.0f, -1.0f,  0.0f, 1.0f),
-			Vertex( 1.0f,  1.0f, -1.0f,  0.0f, 0.0f),
-			Vertex( 1.0f,  1.0f,  1.0f,  1.0f, 0.0f),
-			Vertex( 1.0f, -1.0f,  1.0f,  1.0f, 1.0f),
+			Vertex(-side, -side, -side, 0.0f,  1.0f),
+			Vertex(-side,  side, -side, 0.0f,  0.0f),
+			Vertex( side,  side, -side, 1.0f,  0.0f),
+			Vertex( side, -side, -side, 1.0f,  1.0f),
+										   
+			// Back Face			   
+			Vertex(-side, -side,  side, 1.0f,  1.0f),
+			Vertex( side, -side,  side, 0.0f,  1.0f),
+			Vertex( side,  side,  side, 0.0f,  0.0f),
+			Vertex(-side,  side,  side, 1.0f,  0.0f),
+											
+			// Top Face							
+			Vertex(-side,  side, -side,  0.0f, 1.0f),
+			Vertex(-side,  side,  side,  0.0f, 0.0f),
+			Vertex( side,  side,  side,  1.0f, 0.0f),
+			Vertex( side,  side, -side,  1.0f, 1.0f),
+									
+			// Bottom Face			
+			Vertex(-side, -side, -side,  1.0f, 1.0f),
+			Vertex( side, -side, -side,  0.0f, 1.0f),
+			Vertex( side, -side,  side,  0.0f, 0.0f),
+			Vertex(-side, -side,  side,  1.0f, 0.0f),
+									
+			// Left Face			
+			Vertex(-side, -side,  side,  0.0f, 1.0f),
+			Vertex(-side,  side,  side,  0.0f, 0.0f),
+			Vertex(-side,  side, -side,  1.0f, 0.0f),
+			Vertex(-side, -side, -side,  1.0f, 1.0f),
+									
+			// Right Face			
+			Vertex( side, -side, -side,  0.0f, 1.0f),
+			Vertex( side,  side, -side,  0.0f, 0.0f),
+			Vertex( side,  side,  side,  1.0f, 0.0f),
+			Vertex( side, -side,  side,  1.0f, 1.0f),
 		};
 
 		//Create index buffer
@@ -118,7 +122,8 @@ TexturedBox::TexturedBox(Graphics& gfx)
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
 
 		//Bind texture from file
-		AddStaticBind(std::make_unique<Texture>(gfx, L"Images\\cube.png"));
+		std::wstring imagePath = L"Images\\";
+		AddStaticBind(std::make_unique<Texture>(gfx, imagePath + textureName));
 
 		//Create vertex shader
 		auto pVertexShader = std::make_unique<VertexShader>(gfx, L"TextureVS.cso");
@@ -135,8 +140,8 @@ TexturedBox::TexturedBox(Graphics& gfx)
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc =
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Normal",  0,DXGI_FORMAT_R32G32B32_FLOAT,0,20,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		};
 		//Bind Input vertex layout
 		AddStaticBind(std::make_unique<InputLayout>(gfx, inputElementDesc, pVertexShaderBytecode));

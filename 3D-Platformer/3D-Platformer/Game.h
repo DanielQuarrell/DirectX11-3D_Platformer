@@ -11,6 +11,7 @@ public:
 	int Start();
 private:
 	void UpdateFrame();
+	void InitialiseLevel(int level_num);
 private:
 	Window wnd;
 	Timer timer;

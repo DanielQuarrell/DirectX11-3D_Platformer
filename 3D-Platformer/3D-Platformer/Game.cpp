@@ -1,21 +1,10 @@
 #include "Game.h"
 #include "TexturedBox.h"
+#include <fstream>
 
 Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 {
-	//Create boxes
-	/*
-	for (auto i = 0; i < 5; i++)
-	{
-		boxes.push_back(std::make_unique<Box>(
-			wnd.Gfx(), 
-			i * 3, - 5 + i, 0
-			));
-	}
-	*/
-	
-	boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx()));
-	boxes[0].get()->SetPosition(0, -4, 0);
+	InitialiseLevel(1);
 
 	//Set projection and camera
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
@@ -36,7 +25,58 @@ int Game::Start()
 		}
 		UpdateFrame();
 	}
+}
 
+void Game::InitialiseLevel(int level_num)
+{
+	std::string file_name = "";
+	std::fstream path_file;
+	file_name.append("Resources\\Level" + std::to_string(level_num) + ".txt");
+
+	path_file.open(file_name);
+
+	float levelWidth = 13;
+	float levelHeight = 30;
+
+	float x = 0;
+	float y = 0;
+	float z = 0;
+
+	while (!path_file.eof())
+	{
+		float fileValue;
+
+		if (path_file >> fileValue)
+		{
+			if (fileValue != -1.0f)
+			{
+				y = fileValue;
+
+				boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
+			}
+		}
+		else
+		{
+			//error with file loading
+			path_file.close();
+			return;
+		}
+
+		x += 1.0f;
+
+		if (x >= levelWidth)
+		{
+			x = 0.0f;
+			z += 1.0f;
+		}
+		else
+		{
+
+		}
+
+	}
+	path_file.close();
+	return;
 }
 
 void Game::UpdateFrame()
@@ -77,11 +117,11 @@ void Game::UpdateFrame()
 
 	if (wnd.keyboard.KeyIsPressed(0x57)) //W
 	{
-		verticle = -1;
+		verticle = 1;
 	}
 	if (wnd.keyboard.KeyIsPressed(0x53)) //S
 	{
-		verticle = 1;
+		verticle = -1;
 	}
 	if (wnd.keyboard.KeyIsPressed(0x41)) //A
 	{
@@ -100,7 +140,7 @@ void Game::UpdateFrame()
 		cubeRotation = 1;
 	}
 
-	boxes[0].get()->SetVelocity(verticle * 10, 0.0f, horizontal * 10);
+	boxes[0].get()->SetVelocity(horizontal * 10, 0.0f, verticle * 10);
 	boxes[0].get()->SetEularY(cubeRotation * dt);
 
 	for (auto& b : boxes)

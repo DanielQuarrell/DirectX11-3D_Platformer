@@ -1,10 +1,11 @@
 #pragma once
 #include "GameObjectBase.h"
+#include <string>
 
 class TexturedBox : public GameObjectBase<TexturedBox>
 {
 public:
-	TexturedBox(Graphics& gfx);
+	TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z);
 	void SetVelocity(float _x, float _y, float _z);
 	void SetPosition(float x, float y, float z);
 	void SetEularX(float angle);
@@ -26,4 +27,6 @@ private:
 	float zRot = 0.0f;
 	//Model transform
 	DirectX::XMFLOAT3X3 modelTransform;
+
+	std::wstring textureName = L"";
 };
