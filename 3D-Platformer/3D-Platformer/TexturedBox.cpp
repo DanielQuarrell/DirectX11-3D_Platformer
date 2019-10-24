@@ -18,23 +18,11 @@ TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, flo
 {
 	if (!IsStaticInitialised())
 	{
-		//Structure for vertex
-		struct Vertex
-		{
-			Vertex() {};
-			Vertex(
-			float x, float y, float z,
-			float u, float v):
-			pos(x, y, z), texCoord(u, v){}
 
-			DirectX::XMFLOAT3 pos;
-			DirectX::XMFLOAT2 texCoord;
-			DirectX::XMFLOAT3 normals;
-		};
 
 		//Create the vertex buffer
 		const float side = 0.5f;
-		std::vector<Vertex> vertices =
+		vertices = std::vector<Vertex>
 		{
 			// Front Face
 			Vertex(-side, -side, -side, 0.0f,  1.0f),
@@ -164,13 +152,6 @@ TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, flo
 	);
 }
 
-void TexturedBox::SetVelocity(float _x, float _y, float _z)
-{
-	xVel = _x;
-	yVel = _y;
-	zVel = _z;
-}
-
 void TexturedBox::SetPosition(float _x, float _y, float _z)
 {
 	xPos = _x;
@@ -180,24 +161,22 @@ void TexturedBox::SetPosition(float _x, float _y, float _z)
 
 void TexturedBox::SetEularX(float angle)
 {
-	xRot += angle;
+	xRot = angle;
 }
 
 void TexturedBox::SetEularY(float angle)
 {
-	yRot += angle;
+	yRot = angle;
 }
 
 void TexturedBox::SetEularZ(float angle)
 {
-	zRot += angle;
+	zRot = angle;
 }
 
 void TexturedBox::Update(float dt) noexcept
 {
-	xPos += xVel * dt;
-	yPos += yVel * dt;
-	zPos += zVel * dt;
+
 }
 
 DirectX::XMMATRIX TexturedBox::GetTransformXM() const noexcept

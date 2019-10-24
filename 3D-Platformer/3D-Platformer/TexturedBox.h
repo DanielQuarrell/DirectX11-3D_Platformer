@@ -14,9 +14,20 @@ public:
 	void Update(float dt) noexcept override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 private:
-	float xVel = 0.0f;
-	float yVel = 0.0f;
-	float zVel = 0.0f;
+	//Structure for vertex
+	struct Vertex
+	{
+		Vertex() {};
+		Vertex(
+			float x, float y, float z,
+			float u, float v) :
+			pos(x, y, z), texCoord(u, v) {}
+
+		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT2 texCoord;
+		DirectX::XMFLOAT3 normals;
+	};
+
 	//Position
 	float xPos = 0.0f;
 	float yPos = 0.0f;
@@ -27,6 +38,8 @@ private:
 	float zRot = 0.0f;
 	//Model transform
 	DirectX::XMFLOAT3X3 modelTransform;
+
+	std::vector<Vertex> vertices;
 
 	std::wstring textureName = L"";
 };
