@@ -14,6 +14,7 @@ public:
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	DirectX::XMVECTOR GetBBMinVertex();
 	DirectX::XMVECTOR GetBBMaxVertex();
+	DirectX::XMVECTOR GetCenterVertex();
 	void Draw(Graphics& gfx) const noexcept;
 	virtual void Update(float dt) noexcept = 0;
 	virtual ~GameObject() = default;
@@ -24,6 +25,7 @@ protected:
 	void CreateBoundingBox(std::vector<DirectX::XMFLOAT3>& verticesPositions);
 	void CalculateAABB(DirectX::XMMATRIX transformMatrix);
 
+
 private:
 	virtual const std::vector<std::unique_ptr<Bindable>>& GetStaticBinds() const noexcept = 0;
 
@@ -33,8 +35,12 @@ private:
 
 	DirectX::XMVECTOR bbMinVertex;
 	DirectX::XMVECTOR bbMaxVertex;
+	DirectX::XMVECTOR centerVertex;
+
+	float bbWidth;
+	float bbHeight;
+	float bbDepth;
 
 	std::vector<DirectX::XMFLOAT3> bbVertices;
 	std::vector<unsigned short> bbIndices;
-	DirectX::XMVECTOR centerOffset;
 };

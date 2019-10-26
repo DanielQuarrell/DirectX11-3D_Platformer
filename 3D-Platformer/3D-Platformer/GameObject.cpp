@@ -54,7 +54,7 @@ void GameObject::CreateBoundingBox(std::vector<DirectX::XMFLOAT3>& vertPosArray)
 	float halfDistZ = (maxVertex.z - minVertex.z) / 2.0f;
 
 	// Now store the distance between (0, 0, 0) in model space to the models real center
-	centerOffset = DirectX::XMVectorSet(maxVertex.x - halfDistX, maxVertex.y - halfDistY, maxVertex.z - halfDistZ, 0.0f);
+	centerVertex = DirectX::XMVectorSet(maxVertex.x - halfDistX, maxVertex.y - halfDistY, maxVertex.z - halfDistZ, 0.0f);
 
 	// Create bounding box    
 	// Front Vertices
@@ -110,19 +110,31 @@ void GameObject::CalculateAABB(DirectX::XMMATRIX transformMatrix)
 	for (UINT i = 0; i < bbVertices.size(); i++)
 	{
 		//Transform the bounding boxes vertices to the objects world space
-		DirectX::XMVECTOR Vert = DirectX::XMVectorSet(bbVertices[i].x, bbVertices[i].y, bbVertices[i].z, 0.0f);
-		Vert = DirectX::XMVector3TransformCoord(Vert, transformMatrix);
+		DirectX::XMVECTOR vert = DirectX::XMVectorSet(bbVertices[i].x, bbVertices[i].y, bbVertices[i].z, 0.0f);
+		vert = DirectX::XMVector3TransformCoord(vert, transformMatrix);
 
 		//Get the smallest vertex 
-		minVertex.x = min(minVertex.x, DirectX::XMVectorGetX(Vert));	// Find smallest x value in model
-		minVertex.y = min(minVertex.y, DirectX::XMVectorGetY(Vert));	// Find smallest y value in model
-		minVertex.z = min(minVertex.z, DirectX::XMVectorGetZ(Vert));	// Find smallest z value in model
+		minVertex.x = min(minVertex.x, DirectX::XMVectorGetX(vert));
+		minVertex.y = min(minVertex.y, DirectX::XMVectorGetY(vert));
+		minVertex.z = min(minVertex.z, DirectX::XMVectorGetZ(vert));
 
 		//Get the largest vertex 
-		maxVertex.x = max(maxVertex.x, DirectX::XMVectorGetX(Vert));	// Find largest x value in model
-		maxVertex.y = max(maxVertex.y, DirectX::XMVectorGetY(Vert));	// Find largest y value in model
-		maxVertex.z = max(maxVertex.z, DirectX::XMVectorGetZ(Vert));	// Find largest z value in model
+		maxVertex.x = max(maxVertex.x, DirectX::XMVectorGetX(vert));
+		maxVertex.y = max(maxVertex.y, DirectX::XMVectorGetY(vert));
+		maxVertex.z = max(maxVertex.z, DirectX::XMVectorGetZ(vert));
 	}
+
+	// Compute distance between maxVertex and minVertex
+	bbWidth = (maxVertex.x - minVertex.x);
+	bbHeight = (maxVertex.y - minVertex.y);
+	bbDepth = (maxVertex.z - minVertex.z);
+
+	float halfDistX = bbWidth  / 2.0f;
+	float halfDistY = bbHeight / 2.0f;
+	float halfDistZ = bbDepth  / 2.0f;
+
+	// Now store the distance between (0, 0, 0) in model space to the models real center
+	centerVertex = DirectX::XMVectorSet(maxVertex.x - halfDistX, maxVertex.y - halfDistY, maxVertex.z - halfDistZ, 0.0f);
 
 	//Store Bounding Box's min and max vertices
 	bbMinVertex = DirectX::XMVectorSet(minVertex.x, minVertex.y, minVertex.z, 0.0f);
@@ -137,4 +149,9 @@ DirectX::XMVECTOR GameObject::GetBBMinVertex()
 DirectX::XMVECTOR GameObject::GetBBMaxVertex()
 {
 	return bbMaxVertex;
+}
+
+DirectX::XMVECTOR GameObject::GetCenterVertex()
+{
+	return centerVertex;
 }

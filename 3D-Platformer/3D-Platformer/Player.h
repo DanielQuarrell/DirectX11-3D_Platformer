@@ -6,13 +6,20 @@ class Player : public GameObjectBase<Player>
 {
 public:
 	Player(Graphics& gfx, float _x, float _y, float _z);
-	void SetVelocity(float _horizontal, float _verticle, float _z);
+	void SetPlayerInput(float _horizontal, float _verticle);
+	void MultiplyVelocity(float multiplier);
+	void SetVelocity(float _xVel, float _yVel, float _zVel);
 	void SetPosition(float _x, float _y, float _z);
+	void MovePosition(float _x, float _y, float _z);
 	void SetEularX(float angle);
 	void SetEularY(float angle);
 	void SetEularZ(float angle);
+	void ApplyGravity(float dt);
+	void Jump();
 	void Update(float dt) noexcept override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
+	DirectX::XMVECTOR GetVelocity();
+	DirectX::XMVECTOR GetPosition();
 
 private:
 	//Structure for vertex
@@ -29,7 +36,8 @@ private:
 		DirectX::XMFLOAT3 normals;
 	};
 
-	//Speed
+	//Physics
+	float gravity = 9.8f;
 	float speed = 4.0f;
 	float rotationSpeed = 1.5f;
 	//Velocity
@@ -44,6 +52,7 @@ private:
 	float xRot = 0.0f;
 	float yRot = 0.0f;
 	float zRot = 0.0f;
+
 	//Model transform
 	DirectX::XMFLOAT3X3 modelTransform;
 

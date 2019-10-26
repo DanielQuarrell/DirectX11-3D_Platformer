@@ -16,49 +16,49 @@ Player::Player(Graphics& gfx, float _x, float _y, float _z) :
 	yPos(_y),
 	zPos(_z)
 {
+	//Create the vertex buffer
+	const float side = 0.5f;
+	vertices = std::vector<Vertex>
+	{
+		// Front Face
+		Vertex(-side, -side, -side, 0.0f,  1.0f),
+		Vertex(-side,  side, -side, 0.0f,  0.0f),
+		Vertex(side,  side, -side, 1.0f,  0.0f),
+		Vertex(side, -side, -side, 1.0f,  1.0f),
+
+		// Back Face			   
+		Vertex(-side, -side,  side, 1.0f,  1.0f),
+		Vertex(side, -side,  side, 0.0f,  1.0f),
+		Vertex(side,  side,  side, 0.0f,  0.0f),
+		Vertex(-side,  side,  side, 1.0f,  0.0f),
+
+		// Top Face							
+		Vertex(-side,  side, -side,  0.0f, 1.0f),
+		Vertex(-side,  side,  side,  0.0f, 0.0f),
+		Vertex(side,  side,  side,  1.0f, 0.0f),
+		Vertex(side,  side, -side,  1.0f, 1.0f),
+
+		// Bottom Face			
+		Vertex(-side, -side, -side,  1.0f, 1.0f),
+		Vertex(side, -side, -side,  0.0f, 1.0f),
+		Vertex(side, -side,  side,  0.0f, 0.0f),
+		Vertex(-side, -side,  side,  1.0f, 0.0f),
+
+		// Left Face			
+		Vertex(-side, -side,  side,  0.0f, 1.0f),
+		Vertex(-side,  side,  side,  0.0f, 0.0f),
+		Vertex(-side,  side, -side,  1.0f, 0.0f),
+		Vertex(-side, -side, -side,  1.0f, 1.0f),
+
+		// Right Face			
+		Vertex(side, -side, -side,  0.0f, 1.0f),
+		Vertex(side,  side, -side,  0.0f, 0.0f),
+		Vertex(side,  side,  side,  1.0f, 0.0f),
+		Vertex(side, -side,  side,  1.0f, 1.0f),
+	};
+
 	if (!IsStaticInitialised())
 	{
-		//Create the vertex buffer
-		const float side = 0.5f;
-		vertices = std::vector<Vertex>
-		{
-			// Front Face
-			Vertex(-side, -side, -side, 0.0f,  1.0f),
-			Vertex(-side,  side, -side, 0.0f,  0.0f),
-			Vertex(side,  side, -side, 1.0f,  0.0f),
-			Vertex(side, -side, -side, 1.0f,  1.0f),
-
-			// Back Face			   
-			Vertex(-side, -side,  side, 1.0f,  1.0f),
-			Vertex(side, -side,  side, 0.0f,  1.0f),
-			Vertex(side,  side,  side, 0.0f,  0.0f),
-			Vertex(-side,  side,  side, 1.0f,  0.0f),
-
-			// Top Face							
-			Vertex(-side,  side, -side,  0.0f, 1.0f),
-			Vertex(-side,  side,  side,  0.0f, 0.0f),
-			Vertex(side,  side,  side,  1.0f, 0.0f),
-			Vertex(side,  side, -side,  1.0f, 1.0f),
-
-			// Bottom Face			
-			Vertex(-side, -side, -side,  1.0f, 1.0f),
-			Vertex(side, -side, -side,  0.0f, 1.0f),
-			Vertex(side, -side,  side,  0.0f, 0.0f),
-			Vertex(-side, -side,  side,  1.0f, 0.0f),
-
-			// Left Face			
-			Vertex(-side, -side,  side,  0.0f, 1.0f),
-			Vertex(-side,  side,  side,  0.0f, 0.0f),
-			Vertex(-side,  side, -side,  1.0f, 0.0f),
-			Vertex(-side, -side, -side,  1.0f, 1.0f),
-
-			// Right Face			
-			Vertex(side, -side, -side,  0.0f, 1.0f),
-			Vertex(side,  side, -side,  0.0f, 0.0f),
-			Vertex(side,  side,  side,  1.0f, 0.0f),
-			Vertex(side, -side,  side,  1.0f, 1.0f),
-		};
-
 		//Create index buffer
 		std::vector<unsigned short> indices =
 		{
@@ -159,7 +159,7 @@ Player::Player(Graphics& gfx, float _x, float _y, float _z) :
 	CalculateAABB(GetTransformXM());
 }
 
-void Player::SetVelocity(float _horizontal, float _y, float _verticle)
+void Player::SetPlayerInput(float _horizontal, float _verticle)
 {
 	float rotation = yRot;
 
@@ -174,7 +174,31 @@ void Player::SetVelocity(float _horizontal, float _y, float _verticle)
 	xVel = verticleX + horizontalX;
 	zVel = verticleZ + horizontalZ;
 
-	yVel = _y;
+	std::vector<DirectX::XMFLOAT3> verticePositions;
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		verticePositions.push_back(vertices[i].pos);
+	}
+
+	CreateBoundingBox(verticePositions);
+	CalculateAABB(GetTransformXM());
+}
+
+void Player::MultiplyVelocity(float multiplier)
+{
+	yVel *= multiplier;
+}
+
+void Player::Jump()
+{
+	yVel = 5.0f;
+}
+
+void Player::SetVelocity(float _xVel, float _yVel, float _zVel)
+{
+	xVel = _xVel;
+	yVel = _yVel;
+	zVel = _zVel;
 }
 
 void Player::SetPosition(float _x, float _y, float _z)
@@ -182,6 +206,13 @@ void Player::SetPosition(float _x, float _y, float _z)
 	xPos = _x;
 	yPos = _y;
 	zPos = _z;
+}
+
+void Player::MovePosition(float _x, float _y, float _z)
+{
+	xPos += _x;
+	yPos += _y;
+	zPos += _z;
 }
 
 void Player::SetEularX(float angle)
@@ -199,9 +230,14 @@ void Player::SetEularZ(float angle)
 	zRot += angle;
 }
 
+void Player::ApplyGravity(float dt)
+{
+	yVel -= gravity * dt;
+}
+
 void Player::Update(float dt) noexcept
 {
-	if (xVel != 0 || yVel != 0 || zVel != 0)
+	if (xVel != 0.0f || yVel != 0.0f || zVel != 0.0f)
 	{
 		xPos += xVel * dt;
 		yPos += yVel * dt;
@@ -217,3 +253,15 @@ DirectX::XMMATRIX Player::GetTransformXM() const noexcept
 		DirectX::XMMatrixRotationRollPitchYaw(xRot, yRot, zRot) *
 		DirectX::XMMatrixTranslation(xPos, yPos, zPos);
 }
+
+DirectX::XMVECTOR Player::GetVelocity()
+{
+	return DirectX::XMVectorSet(xVel, yVel, zVel, 0.0f);
+}
+
+DirectX::XMVECTOR Player::GetPosition()
+{
+	return DirectX::XMVectorSet(xPos, yPos, zPos, 0.0f);
+}
+
+
