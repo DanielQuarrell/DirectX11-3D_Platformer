@@ -148,6 +148,15 @@ Player::Player(Graphics& gfx, float _x, float _y, float _z) :
 		&modelTransform,
 		DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f)
 	);
+
+	std::vector<DirectX::XMFLOAT3> verticePositions;
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		verticePositions.push_back(vertices[i].pos);
+	}
+
+	CreateBoundingBox(verticePositions);
+	CalculateAABB(GetTransformXM());
 }
 
 void Player::SetVelocity(float _horizontal, float _y, float _verticle)
@@ -192,9 +201,14 @@ void Player::SetEularZ(float angle)
 
 void Player::Update(float dt) noexcept
 {
-	xPos += xVel * dt;
-	yPos += yVel * dt;
-	zPos += zVel * dt;
+	if (xVel != 0 || yVel != 0 || zVel != 0)
+	{
+		xPos += xVel * dt;
+		yPos += yVel * dt;
+		zPos += zVel * dt;
+
+		CalculateAABB(GetTransformXM());
+	}
 }
 
 DirectX::XMMATRIX Player::GetTransformXM() const noexcept

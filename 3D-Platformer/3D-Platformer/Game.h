@@ -12,6 +12,7 @@ public:
 private:
 	void UpdateFrame();
 	void UpdateCamera(float dt);
+	bool CheckCollision(DirectX::XMVECTOR aMin, DirectX::XMVECTOR aMax, DirectX::XMVECTOR bMin, DirectX::XMVECTOR bMax);
 	void UpdatePlayer(float dt);
 	void InitialiseLevel(int level_num);
 private:

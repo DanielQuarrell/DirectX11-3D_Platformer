@@ -1,4 +1,4 @@
-
+//Directional Light
 static const float3 lightDirection = { 0.25f, 0.5f, -1.0f };
 static const float4 ambient = { 0.2, 0.2f, 0.2f, 1.0f };
 static const float4 diffuseColor = { 1.0f, 1.0f, 1.0f, 1.0f };

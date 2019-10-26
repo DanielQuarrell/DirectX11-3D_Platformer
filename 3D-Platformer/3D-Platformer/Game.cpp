@@ -97,10 +97,20 @@ void Game::UpdateFrame()
 	//Camera movement
 	UpdateCamera(dt);
 
-	for (auto& b : boxes)
+	for (auto& box : boxes)
 	{
-		b->Update(dt);
-		b->Draw(wnd.Gfx());
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = box->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = box->GetBBMaxVertex();
+
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			box->SetEularY(45);
+		}
+
+		box->Update(dt);
+		box->Draw(wnd.Gfx());
 	}
 
 	player->Draw(wnd.Gfx());
@@ -112,8 +122,9 @@ void Game::UpdatePlayer(float dt)
 {
 	float verticle = 0;
 	float horizontal = 0;
-	float liftyboi = 0;
+	float elevation = 0;
 	float cubeRotation = 0;
+
 
 	if (wnd.keyboard.KeyIsPressed(0x57)) //W
 	{
@@ -141,13 +152,13 @@ void Game::UpdatePlayer(float dt)
 	}
 	if (wnd.keyboard.KeyIsPressed(0x52)) //R
 	{
-		liftyboi = 1;
+		elevation = 1;
 	}
 	if (wnd.keyboard.KeyIsPressed(0x46)) //F
 	{
-		liftyboi = -1;
+		elevation = -1;
 	}
-	player->SetVelocity(horizontal, liftyboi * 10, verticle);
+	player->SetVelocity(horizontal, elevation * 3, verticle);
 	player->SetEularY(cubeRotation * dt);
 
 	player->Update(dt);
@@ -168,4 +179,22 @@ void Game::UpdateCamera(float dt)
 
 	camera->SetMovementTransform(rMovement * dt);
 	wnd.Gfx().SetCamera(camera->GetMatrix());
+}
+
+bool Game::CheckCollision(
+	DirectX::XMVECTOR aMin,
+	DirectX::XMVECTOR aMax,
+	DirectX::XMVECTOR bMin,
+	DirectX::XMVECTOR bMax)
+{
+	if (DirectX::XMVectorGetX(aMin) < DirectX::XMVectorGetX(bMax) && DirectX::XMVectorGetX(aMax) > DirectX::XMVectorGetX(bMin) &&
+		DirectX::XMVectorGetY(aMin) < DirectX::XMVectorGetY(bMax) && DirectX::XMVectorGetY(aMax) > DirectX::XMVectorGetY(bMin) &&
+		DirectX::XMVectorGetZ(aMin) < DirectX::XMVectorGetZ(bMax) && DirectX::XMVectorGetZ(aMax) > DirectX::XMVectorGetZ(bMin))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

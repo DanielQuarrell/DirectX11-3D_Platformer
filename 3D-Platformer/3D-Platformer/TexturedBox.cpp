@@ -16,51 +16,49 @@ TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, flo
 	yPos(_y),
 	zPos(_z)
 {
+	//Create the vertex buffer
+	const float side = 0.5f;
+	vertices = std::vector<Vertex>
+	{
+		// Front Face
+		Vertex(-side, -side, -side, 0.0f,  1.0f),
+		Vertex(-side,  side, -side, 0.0f,  0.0f),
+		Vertex(side,  side, -side, 1.0f,  0.0f),
+		Vertex(side, -side, -side, 1.0f,  1.0f),
+
+		// Back Face			   
+		Vertex(-side, -side,  side, 1.0f,  1.0f),
+		Vertex(side, -side,  side, 0.0f,  1.0f),
+		Vertex(side,  side,  side, 0.0f,  0.0f),
+		Vertex(-side,  side,  side, 1.0f,  0.0f),
+
+		// Top Face							
+		Vertex(-side,  side, -side,  0.0f, 1.0f),
+		Vertex(-side,  side,  side,  0.0f, 0.0f),
+		Vertex(side,  side,  side,  1.0f, 0.0f),
+		Vertex(side,  side, -side,  1.0f, 1.0f),
+
+		// Bottom Face			
+		Vertex(-side, -side, -side,  1.0f, 1.0f),
+		Vertex(side, -side, -side,  0.0f, 1.0f),
+		Vertex(side, -side,  side,  0.0f, 0.0f),
+		Vertex(-side, -side,  side,  1.0f, 0.0f),
+
+		// Left Face			
+		Vertex(-side, -side,  side,  0.0f, 1.0f),
+		Vertex(-side,  side,  side,  0.0f, 0.0f),
+		Vertex(-side,  side, -side,  1.0f, 0.0f),
+		Vertex(-side, -side, -side,  1.0f, 1.0f),
+
+		// Right Face			
+		Vertex(side, -side, -side,  0.0f, 1.0f),
+		Vertex(side,  side, -side,  0.0f, 0.0f),
+		Vertex(side,  side,  side,  1.0f, 0.0f),
+		Vertex(side, -side,  side,  1.0f, 1.0f),
+	};
+
 	if (!IsStaticInitialised())
 	{
-
-
-		//Create the vertex buffer
-		const float side = 0.5f;
-		vertices = std::vector<Vertex>
-		{
-			// Front Face
-			Vertex(-side, -side, -side, 0.0f,  1.0f),
-			Vertex(-side,  side, -side, 0.0f,  0.0f),
-			Vertex( side,  side, -side, 1.0f,  0.0f),
-			Vertex( side, -side, -side, 1.0f,  1.0f),
-										   
-			// Back Face			   
-			Vertex(-side, -side,  side, 1.0f,  1.0f),
-			Vertex( side, -side,  side, 0.0f,  1.0f),
-			Vertex( side,  side,  side, 0.0f,  0.0f),
-			Vertex(-side,  side,  side, 1.0f,  0.0f),
-											
-			// Top Face							
-			Vertex(-side,  side, -side,  0.0f, 1.0f),
-			Vertex(-side,  side,  side,  0.0f, 0.0f),
-			Vertex( side,  side,  side,  1.0f, 0.0f),
-			Vertex( side,  side, -side,  1.0f, 1.0f),
-									
-			// Bottom Face			
-			Vertex(-side, -side, -side,  1.0f, 1.0f),
-			Vertex( side, -side, -side,  0.0f, 1.0f),
-			Vertex( side, -side,  side,  0.0f, 0.0f),
-			Vertex(-side, -side,  side,  1.0f, 0.0f),
-									
-			// Left Face			
-			Vertex(-side, -side,  side,  0.0f, 1.0f),
-			Vertex(-side,  side,  side,  0.0f, 0.0f),
-			Vertex(-side,  side, -side,  1.0f, 0.0f),
-			Vertex(-side, -side, -side,  1.0f, 1.0f),
-									
-			// Right Face			
-			Vertex( side, -side, -side,  0.0f, 1.0f),
-			Vertex( side,  side, -side,  0.0f, 0.0f),
-			Vertex( side,  side,  side,  1.0f, 0.0f),
-			Vertex( side, -side,  side,  1.0f, 1.0f),
-		};
-
 		//Create index buffer
 		std::vector<unsigned short> indices =
 		{
@@ -150,6 +148,15 @@ TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, flo
 		&modelTransform,
 		DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f)
 	);
+
+	std::vector<DirectX::XMFLOAT3> verticePositions;
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		verticePositions.push_back(vertices[i].pos);
+	}
+	
+	CreateBoundingBox(verticePositions);
+	CalculateAABB(GetTransformXM());
 }
 
 void TexturedBox::SetPosition(float _x, float _y, float _z)
@@ -176,7 +183,6 @@ void TexturedBox::SetEularZ(float angle)
 
 void TexturedBox::Update(float dt) noexcept
 {
-
 }
 
 DirectX::XMMATRIX TexturedBox::GetTransformXM() const noexcept

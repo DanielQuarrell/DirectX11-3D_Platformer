@@ -12,6 +12,8 @@ public:
 	GameObject(const GameObject&) = delete;
 
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
+	DirectX::XMVECTOR GetBBMinVertex();
+	DirectX::XMVECTOR GetBBMaxVertex();
 	void Draw(Graphics& gfx) const noexcept;
 	virtual void Update(float dt) noexcept = 0;
 	virtual ~GameObject() = default;
@@ -19,9 +21,20 @@ public:
 protected:
 	void AddBind(std::unique_ptr<Bindable> bind);
 	void AddIndexBuffer(std::unique_ptr<class IndexBuffer> ibuf);
+	void CreateBoundingBox(std::vector<DirectX::XMFLOAT3>& verticesPositions);
+	void CalculateAABB(DirectX::XMMATRIX transformMatrix);
+
 private:
 	virtual const std::vector<std::unique_ptr<Bindable>>& GetStaticBinds() const noexcept = 0;
+
 private:
 	const IndexBuffer* pIndexBuffer = nullptr;
 	std::vector<std::unique_ptr<Bindable>> binds;
+
+	DirectX::XMVECTOR bbMinVertex;
+	DirectX::XMVECTOR bbMaxVertex;
+
+	std::vector<DirectX::XMFLOAT3> bbVertices;
+	std::vector<unsigned short> bbIndices;
+	DirectX::XMVECTOR centerOffset;
 };
