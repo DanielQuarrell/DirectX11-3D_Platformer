@@ -9,13 +9,15 @@ public:
 	void SetPlayerInput(float _horizontal, float _verticle);
 	void MultiplyVelocity(float multiplier);
 	void SetVelocity(float _xVel, float _yVel, float _zVel);
+	void SetSpawnPosition(float _x, float _y, float _z);
 	void SetPosition(float _x, float _y, float _z);
 	void MovePosition(float _x, float _y, float _z);
-	void SetEularX(float angle);
-	void SetEularY(float angle);
-	void SetEularZ(float angle);
+	void SetRotationX(float angle);
+	void SetRotationY(float angle);
+	void SetRotationZ(float angle);
 	void ApplyGravity(float dt);
 	void Jump();
+	void SetGrounded(bool _grounded);
 	void Update(float dt) noexcept override;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	DirectX::XMVECTOR GetVelocity();
@@ -37,9 +39,14 @@ private:
 	};
 
 	//Physics
-	float gravity = 4.0f;
+	bool grounded = false;
+	float gravity = 9.8f;
 	float speed = 4.0f;
 	float rotationSpeed = 1.5f;
+
+	//SpawnPosition
+	float spawnX, spawnY, spawnZ;
+
 	//Velocity
 	float xVel = 0.0f;
 	float yVel = 0.0f;

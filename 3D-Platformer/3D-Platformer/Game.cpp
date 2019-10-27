@@ -7,7 +7,7 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 	player = std::make_unique<Player>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 	camera = std::make_unique<Camera>(player.get());
 
-	InitialiseLevel(1);
+	InitialiseLevel(3);
 	//Set projection and camera
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
@@ -52,17 +52,37 @@ void Game::InitialiseLevel(int level_num)
 		{
 			if (fileValue != -1.0f)
 			{
+				float numberOfBoxes;
+
 				if (fileValue == -2.0f)
 				{
-					player->SetPosition(x, 2, z);
-					y = 0;
+					float spawnX = x;
+					float spawnY = 2;
+					float spawnZ = z;
+					player->SetSpawnPosition(spawnX, spawnY, spawnZ);
+					player->SetPosition(spawnX, spawnY, spawnZ);
+
+					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 0.0f, z));
+				}
+				else if (fileValue == -3.0f)
+				{
+					pressurePlate = std::make_unique<Trigger>(wnd.Gfx(), L"trigger.png", x, 2.5f, z);
+					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 2.0f, z));
+				}
+				else if (fileValue == -4.0)
+				{
+					bridge.push_back(std::make_unique<Bridge>(wnd.Gfx(), L"bridge.png", x, 0.0f, z));
 				}
 				else
 				{
-					y = fileValue;
-				}
+					numberOfBoxes = fileValue;
 
-				boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
+					for (int yVal = 0; yVal <= numberOfBoxes; yVal++)
+					{
+						y = yVal;
+						boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
+					}
+				}
 			}
 		}
 		else
@@ -93,6 +113,24 @@ void Game::UpdateFrame()
 	//Player movement
 	UpdatePlayer(dt);
 
+	if (!pressurePlate->IsActivated())
+	{
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = pressurePlate->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = pressurePlate->GetBBMaxVertex();
+
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			pressurePlate->Activate();
+
+			for (auto& bridgePiece : bridge)
+			{
+				bridgePiece->MoveTowards(3.0f, 1.0f);
+			}
+		}
+	}
+
 	for (auto& box : boxes)
 	{
 		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
@@ -109,11 +147,36 @@ void Game::UpdateFrame()
 		}
 	}
 
+	for (auto& bridgePiece : bridge)
+	{
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = bridgePiece->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = bridgePiece->GetBBMaxVertex();
+
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
+			DirectX::XMVECTOR bCenter = bridgePiece->GetCenterVertex();
+
+			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
+		}
+	}
+
 	for (auto& box : boxes)
 	{
 		box->Update(dt);
 		box->Draw(wnd.Gfx());
 	}
+
+	for (auto& bridgePiece : bridge)
+	{
+		bridgePiece->Update(dt);
+		bridgePiece->Draw(wnd.Gfx());
+	}
+
+	pressurePlate->Update(dt);
+	pressurePlate->Draw(wnd.Gfx());
 
 	player->Update(dt);
 	//Camera movement
@@ -159,7 +222,7 @@ void Game::UpdatePlayer(float dt)
 	}
 
 	player->SetPlayerInput(horizontal, verticle);
-	player->SetEularY(playerRotation * dt);
+	player->SetRotationY(playerRotation * dt);
 	player->ApplyGravity(dt);
 }
 
@@ -257,6 +320,7 @@ void Game::CalculateDirection(
 		if (yPositive == highestAxis || yNegative == highestAxis)
 		{
 			yVel = 0;
+			player->SetGrounded(true);
 			player->MovePosition(0, yEntryDistance, 0);
 		}
 

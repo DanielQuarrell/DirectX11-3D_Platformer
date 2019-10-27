@@ -166,21 +166,6 @@ void TexturedBox::SetPosition(float _x, float _y, float _z)
 	zPos = _z;
 }
 
-void TexturedBox::SetEularX(float angle)
-{
-	xRot = angle;
-}
-
-void TexturedBox::SetEularY(float angle)
-{
-	yRot = angle;
-}
-
-void TexturedBox::SetEularZ(float angle)
-{
-	zRot = angle;
-}
-
 void TexturedBox::Update(float dt) noexcept
 {
 }

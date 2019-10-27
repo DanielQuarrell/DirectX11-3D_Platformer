@@ -14,7 +14,10 @@ void GameObject::Draw(Graphics& gfx) const noexcept
 	}
 
 	//Draw object
-	gfx.DrawIndexed(pIndexBuffer->GetCount());
+	if (isVisible)
+	{
+		gfx.DrawIndexed(pIndexBuffer->GetCount());
+	}
 }
 
 void GameObject::AddBind(std::unique_ptr<Bindable> bind)
@@ -123,4 +126,9 @@ DirectX::XMVECTOR GameObject::GetBBMaxVertex()
 DirectX::XMVECTOR GameObject::GetCenterVertex()
 {
 	return centerVertex;
+}
+
+void GameObject::SetVisibility(bool _isVisible)
+{
+	isVisible = _isVisible;
 }

@@ -3,6 +3,8 @@
 #include "Timer.h"
 #include "Camera.h"
 #include "TexturedBox.h"
+#include "Bridge.h"
+#include "Trigger.h"
 
 class Game
 {
@@ -21,6 +23,8 @@ private:
 	Window wnd;
 	Timer timer;
 	std::vector<std::unique_ptr<class TexturedBox>> boxes;
+	std::vector<std::unique_ptr<class Bridge>> bridge;
+	std::unique_ptr<class Trigger> pressurePlate;
 	std::unique_ptr<class Player> player;
 	std::unique_ptr<class Camera> camera;
 };

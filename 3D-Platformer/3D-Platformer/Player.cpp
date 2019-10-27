@@ -184,7 +184,16 @@ void Player::MultiplyVelocity(float multiplier)
 
 void Player::Jump()
 {
-	yVel = 2.5f;
+	if (grounded)
+	{
+		yVel = 5.0f;
+		grounded = false;
+	}
+}
+
+void Player::SetGrounded(bool _grounded)
+{
+	grounded = _grounded;
 }
 
 void Player::SetVelocity(float _xVel, float _yVel, float _zVel)
@@ -192,6 +201,13 @@ void Player::SetVelocity(float _xVel, float _yVel, float _zVel)
 	xVel = _xVel;
 	yVel = _yVel;
 	zVel = _zVel;
+}
+
+void Player::SetSpawnPosition(float _x, float _y, float _z)
+{
+	spawnX = _x;
+	spawnY = _y;
+	spawnZ = _z;
 }
 
 void Player::SetPosition(float _x, float _y, float _z)
@@ -208,17 +224,17 @@ void Player::MovePosition(float _x, float _y, float _z)
 	zPos += _z;
 }
 
-void Player::SetEularX(float angle)
+void Player::SetRotationX(float angle)
 {
 	xRot += angle;
 }
 
-void Player::SetEularY(float angle)
+void Player::SetRotationY(float angle)
 {
 	yRot += angle * rotationSpeed;
 }
 
-void Player::SetEularZ(float angle)
+void Player::SetRotationZ(float angle)
 {
 	zRot += angle;
 }
@@ -237,6 +253,21 @@ void Player::Update(float dt) noexcept
 		zPos += zVel * dt;
 
 		CalculateAABB(GetTransformXM());
+	}
+
+	if (yPos < 0)
+	{
+		xPos = spawnX;
+		yPos = spawnY;
+		zPos = spawnZ;
+
+		xVel = 0.0f;
+		yVel = 0.0f;
+		zVel = 0.0f;
+
+		xRot = 0.0f;
+		yRot = 0.0f;
+		zRot = 0.0f;
 	}
 }
 

@@ -15,6 +15,7 @@ public:
 	DirectX::XMVECTOR GetBBMinVertex();
 	DirectX::XMVECTOR GetBBMaxVertex();
 	DirectX::XMVECTOR GetCenterVertex();
+	void SetVisibility(bool _isVisible);
 	void Draw(Graphics& gfx) const noexcept;
 	virtual void Update(float dt) noexcept = 0;
 	virtual ~GameObject() = default;
@@ -40,6 +41,8 @@ private:
 	float bbWidth;
 	float bbHeight;
 	float bbDepth;
+
+	bool isVisible = true;
 
 	std::vector<DirectX::XMFLOAT3> bbVertices;
 };
