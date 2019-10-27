@@ -174,13 +174,6 @@ void Player::SetPlayerInput(float _horizontal, float _verticle)
 	xVel = verticleX + horizontalX;
 	zVel = verticleZ + horizontalZ;
 
-	std::vector<DirectX::XMFLOAT3> verticePositions;
-	for (int i = 0; i < vertices.size(); i++)
-	{
-		verticePositions.push_back(vertices[i].pos);
-	}
-
-	CreateBoundingBox(verticePositions);
 	CalculateAABB(GetTransformXM());
 }
 
@@ -191,7 +184,7 @@ void Player::MultiplyVelocity(float multiplier)
 
 void Player::Jump()
 {
-	yVel = 5.0f;
+	yVel = 2.5f;
 }
 
 void Player::SetVelocity(float _xVel, float _yVel, float _zVel)

@@ -37,7 +37,7 @@ private:
 	};
 
 	//Physics
-	float gravity = 9.8f;
+	float gravity = 4.0f;
 	float speed = 4.0f;
 	float rotationSpeed = 1.5f;
 	//Velocity

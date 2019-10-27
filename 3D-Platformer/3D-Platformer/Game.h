@@ -14,7 +14,7 @@ private:
 	void UpdateFrame();
 	void UpdateCamera(float dt);
 	bool CheckCollision(DirectX::XMVECTOR aMin, DirectX::XMVECTOR aMax, DirectX::XMVECTOR bMin, DirectX::XMVECTOR bMax);
-	float SweptAABB(DirectX::XMVECTOR aMin, DirectX::XMVECTOR aMax, DirectX::XMVECTOR bMin, DirectX::XMVECTOR bMax, float& normalX, float& normalY, float& normalZ);
+	void CalculateDirection(DirectX::XMVECTOR aMin, DirectX::XMVECTOR aMax, DirectX::XMVECTOR bMin, DirectX::XMVECTOR bMax, DirectX::XMVECTOR aCenter, DirectX::XMVECTOR bCenter);
 	void UpdatePlayer(float dt);
 	void InitialiseLevel(int level_num);
 private:

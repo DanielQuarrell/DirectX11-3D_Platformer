@@ -68,37 +68,6 @@ void GameObject::CreateBoundingBox(std::vector<DirectX::XMFLOAT3>& vertPosArray)
 	bbVertices.push_back(DirectX::XMFLOAT3(maxVertex.x, minVertex.y, maxVertex.z));
 	bbVertices.push_back(DirectX::XMFLOAT3(maxVertex.x, maxVertex.y, maxVertex.z));
 	bbVertices.push_back(DirectX::XMFLOAT3(minVertex.x, maxVertex.y, maxVertex.z));
-
-	unsigned short* i = new unsigned short[36];
-
-	// Front Face
-	i[0] = 0; i[1] = 1; i[2] = 2;
-	i[3] = 0; i[4] = 2; i[5] = 3;
-
-	// Back Face
-	i[6] = 4; i[7] = 5; i[8] = 6;
-	i[9] = 4; i[10] = 6; i[11] = 7;
-
-	// Top Face
-	i[12] = 1; i[13] = 7; i[14] = 6;
-	i[15] = 1; i[16] = 6; i[17] = 2;
-
-	// Bottom Face
-	i[18] = 0; i[19] = 4; i[20] = 5;
-	i[21] = 0; i[22] = 5; i[23] = 3;
-
-	// Left Face
-	i[24] = 4; i[25] = 7; i[26] = 1;
-	i[27] = 4; i[28] = 1; i[29] = 0;
-
-	// Right Face
-	i[30] = 3; i[31] = 2; i[32] = 6;
-	i[33] = 3; i[34] = 6; i[35] = 5;
-
-	for (int j = 0; j < 36; j++)
-	{
-		bbIndices.push_back(i[j]);
-	}
 }
 
 void GameObject::CalculateAABB(DirectX::XMMATRIX transformMatrix)

@@ -42,5 +42,4 @@ private:
 	float bbDepth;
 
 	std::vector<DirectX::XMFLOAT3> bbVertices;
-	std::vector<unsigned short> bbIndices;
 };
