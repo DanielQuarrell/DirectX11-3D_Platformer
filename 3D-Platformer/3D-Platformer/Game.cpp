@@ -107,16 +107,19 @@ void Game::UpdateFrame()
 
 			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
 		}
+	}
 
+	for (auto& box : boxes)
+	{
 		box->Update(dt);
 		box->Draw(wnd.Gfx());
 	}
 
 	player->Update(dt);
-	player->Draw(wnd.Gfx());
-	
 	//Camera movement
 	UpdateCamera(dt);
+	player->Draw(wnd.Gfx());
+	
 	wnd.Gfx().EndFrame();
 }
 
@@ -243,23 +246,25 @@ void Game::CalculateDirection(
 	float yVel = dx::XMVectorGetY(player->GetVelocity());
 	float zVel = dx::XMVectorGetZ(player->GetVelocity());
 
-	if (xPositive == highestAxis || xNegative == highestAxis)
+	if (highestAxis < 1.0f)
 	{
-		xVel = 0;
-		player->MovePosition(xEntryDistance, 0, 0);
-	}
+		if (xPositive == highestAxis || xNegative == highestAxis)
+		{
+			xVel = 0;
+			player->MovePosition(xEntryDistance, 0, 0);
+		}
 
+		if (yPositive == highestAxis || yNegative == highestAxis)
+		{
+			yVel = 0;
+			player->MovePosition(0, yEntryDistance, 0);
+		}
 
-	if (yPositive == highestAxis || yNegative == highestAxis)
-	{
-		yVel = 0;
- 		player->MovePosition(0, yEntryDistance, 0);
-	}
-
-	if (zPositive == highestAxis || zNegative == highestAxis)
-	{
-		zVel = 0;
-		player->MovePosition(0, 0, zEntryDistance);
+		if (zPositive == highestAxis || zNegative == highestAxis)
+		{
+			zVel = 0;
+			player->MovePosition(0, 0, zEntryDistance);
+		}
 	}
 
 	player->SetVelocity(xVel, yVel, zVel);
