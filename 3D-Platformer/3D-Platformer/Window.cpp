@@ -76,6 +76,18 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
+void Window::EnableCursor()
+{
+	cursorEnabled = true;
+	ShowCursor();
+}
+
+void Window::DisableCursor()
+{
+	cursorEnabled = false;
+	HideCursor();
+}
+
 std::optional<int> Window::ProcessMessages() noexcept
 {
 	MSG msg;
@@ -93,6 +105,16 @@ std::optional<int> Window::ProcessMessages() noexcept
 
 	//return empty optional to run normally
 	return {};
+}
+
+void Window::HideCursor()
+{
+	while (::ShowCursor(FALSE) >= 0);
+}
+
+void Window::ShowCursor()
+{
+	while (::ShowCursor(TRUE) < 0);
 }
 
 Graphics& Window::Gfx()
