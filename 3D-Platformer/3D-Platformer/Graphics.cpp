@@ -28,6 +28,7 @@ Graphics::Graphics(HWND hWnd)
 	swapChainDesc.OutputWindow = hWnd;								//Handle to app window
 	swapChainDesc.Windowed = TRUE;									//Windowed or full screen
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;			//Lets the display driver handle the front buffer before swapping it out with the back buffer
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;   //Allows application to switch from windowed mode to full screen
 
 	//Create the Swapchain
 	D3D11CreateDeviceAndSwapChain(
@@ -108,6 +109,8 @@ Graphics::~Graphics()
 	}
 	if (pSwapChain != nullptr)
 	{
+		//Switch back to windowed mode before closing
+		pSwapChain->SetFullscreenState(FALSE, NULL);
 		pSwapChain->Release();
 	}
 	if (pContext != nullptr)
@@ -120,7 +123,7 @@ Graphics::~Graphics()
 	}
 	if (pDSV != nullptr)
 	{
-		pRenderTarget->Release();
+		pDSV->Release();
 	}
 }
 
