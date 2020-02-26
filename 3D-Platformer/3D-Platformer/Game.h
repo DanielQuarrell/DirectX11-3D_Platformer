@@ -27,4 +27,6 @@ private:
 	std::unique_ptr<class Trigger> pressurePlate;
 	std::unique_ptr<class Player> player;
 	std::unique_ptr<class Camera> camera;
+
+	std::unique_ptr<class CustomObj> button;
 };

@@ -1,11 +1,13 @@
 #include "Game.h"
 #include "Player.h"
+#include "CustomObj.h"
 #include <fstream>
 
 Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 {
 	player = std::make_unique<Player>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 	camera = std::make_unique<Camera>(player.get());
+	button = std::make_unique<CustomObj>(wnd.Gfx(), L"BRB", 7.0f, 2.0f, 3.0f, 5.0f, 5.0f, 5.0f);
 
 	InitialiseLevel(3);
 	//Set projection and camera
@@ -164,6 +166,11 @@ void Game::UpdateFrame()
 		}
 	}
 
+	player->Update(dt);
+	//Camera movement
+	UpdateCamera(dt);
+	player->Draw(wnd.Gfx());
+
 	for (auto& box : boxes)
 	{
 		box->Update(dt);
@@ -179,10 +186,8 @@ void Game::UpdateFrame()
 	pressurePlate->Update(dt);
 	pressurePlate->Draw(wnd.Gfx());
 
-	player->Update(dt);
-	//Camera movement
-	UpdateCamera(dt);
-	player->Draw(wnd.Gfx());
+	button->Update(dt);
+	button->Draw(wnd.Gfx());
 	
 	wnd.Gfx().EndFrame();
 }
