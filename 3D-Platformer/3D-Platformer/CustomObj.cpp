@@ -20,24 +20,26 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 
 	if (!IsStaticInitialised())
 	{
-		//Calculate normals for flat object
-		/*
-		for (size_t i = 0; i < indices.size(); i += 3)
+		//Calculate normals if 
+		
+		if (!hasNormals)
 		{
-			Vertex& v0 = vertices[indices[i]];
-			Vertex& v1 = vertices[indices[i + 1]];
-			Vertex& v2 = vertices[indices[i + 2]];
-			const DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&v0.pos);
-			const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
-			const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
+			for (size_t i = 0; i < indices.size(); i += 3)
+			{
+				Vertex& v0 = vertices[indices[i]];
+				Vertex& v1 = vertices[indices[i + 1]];
+				Vertex& v2 = vertices[indices[i + 2]];
+				const DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&v0.pos);
+				const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
+				const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
 
-			const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0)));
+				const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0)));
 
-			XMStoreFloat3(&v0.normal, n);
-			XMStoreFloat3(&v1.normal, n);
-			XMStoreFloat3(&v2.normal, n);
+				XMStoreFloat3(&v0.normal, n);
+				XMStoreFloat3(&v1.normal, n);
+				XMStoreFloat3(&v2.normal, n);
+			}
 		}
-		*/
 
 		//Bind vertex buffer
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
@@ -116,30 +118,28 @@ DirectX::XMMATRIX CustomObj::GetTransformXM() const noexcept
 void CustomObj::LoadObjModel(std::wstring filename)
 {
 	//Obj path
-	std::wstring modelPath = L"3DObjects\\";
+	std::wstring objectPath = L"3DObjects\\";
 
 	//Open file
-	std::wifstream fileIn(modelPath + filename.c_str() + L".obj");	
+	std::wifstream fileIn(objectPath + filename.c_str() + L".obj");	
 
-	std::wstring meshMatLib;								
+	//Mtl file name
+	std::wstring mtl_filename;								
 
-	//Arrays to store our model's information
+	//Arrays to store model information
 	std::vector<DirectX::XMFLOAT3> vertPos;
 	std::vector<DirectX::XMFLOAT2> vertTexCoord;
 	std::vector<DirectX::XMFLOAT3> vertNorm;
-	std::vector<std::wstring> meshMaterials;
 
 	//Vertex definition indices
 	std::vector<int> vertPosIndex;
 	std::vector<int> vertNormIndex;
-	std::vector<int> vertTCIndex;
+	std::vector<int> vertTexCoordIndex;
 
 	//Make sure we have a default if no tex coords or normals are defined
-	bool hasTexCoord = false;
-	bool hasNormals = false;
+	bool hasTexture = false;
 
 	//Temp variables to store into vectors
-	std::wstring meshMaterialsTemp;
 	int vertPosIndexTemp;
 	int vertNormIndexTemp;
 	int vertTCIndexTemp;
@@ -149,8 +149,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 	std::wstring face;		//Holds the string containing our face vertices
 	int vIndex = 0;			//Keep track of our vertex index count
 	int triangleCount = 0;	//Total Triangles
-	int totalVerts = 0;
-	int meshTriangles = 0;
+	int totalVerts = 0;		//Total Verticies
 
 	//Check to see if the file was opened
 	if (fileIn)
@@ -185,11 +184,12 @@ void CustomObj::LoadObjModel(std::wstring filename)
 					else if (c == 't')	
 					{
 						float vtcu, vtcv;
-						fileIn >> vtcu >> vtcv;		//Store next two types
+						fileIn >> vtcu >> vtcv;
 
 						vertTexCoord.push_back(DirectX::XMFLOAT2(vtcu, vtcv));
 
-						hasTexCoord = true;	//We know the model uses texture coords
+						//Model uses texture
+						hasTexture = true;	
 					}
 
 					//vn - vertex normals
@@ -200,7 +200,8 @@ void CustomObj::LoadObjModel(std::wstring filename)
 					
 						vertNorm.push_back(DirectX::XMFLOAT3(vnx, vny, vnz));
 
-						hasNormals = true;	//We know the model defines normals
+						//Model difines normals
+						hasNormals = true;	
 					}
 					break;
 
@@ -212,7 +213,9 @@ void CustomObj::LoadObjModel(std::wstring filename)
 					if (c == ' ')
 					{
 						face = L"";
-						std::wstring vertexDefinition;	//Holds one vertex definition at a time
+
+						//Holds one vertex definition at a time
+						std::wstring vertexDefinition;	
 						triangleCount = 0;
 
 						c = fileIn.get();
@@ -240,7 +243,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 						//Every vertex in the face after the first two are new faces
 						triangleCount -= 1;		
 
-						std::wstringstream stringString(face);
+						std::wstringstream stringStream(face);
 
 						if (face.length() > 0)
 						{
@@ -251,7 +254,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 							for (int i = 0; i < 3; ++i)		
 							{
 								//Get vertex definition (vPos/vTexCoord/vNorm)
-								stringString >> vertexDefinition;	
+								stringStream >> vertexDefinition;	
 
 								//(vPos, vTexCoord, or vNorm)
 								std::wstring vertPart;
@@ -337,7 +340,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 										//Check if it has already been loaded
 										if (vertPosIndexTemp == vertPosIndex[iCheck] && !vertexExists)
 										{
-											if (vertTCIndexTemp == vertTCIndex[iCheck])
+											if (vertTCIndexTemp == vertTexCoordIndex[iCheck])
 											{
 												indices.push_back(iCheck);	//Set index for this vertex
 												vertexExists = true;		
@@ -350,11 +353,11 @@ void CustomObj::LoadObjModel(std::wstring filename)
 								if (!vertexExists)
 								{
 									vertPosIndex.push_back(vertPosIndexTemp);
-									vertTCIndex.push_back(vertTCIndexTemp);
+									vertTexCoordIndex.push_back(vertTCIndexTemp);
 									vertNormIndex.push_back(vertNormIndexTemp);
 
 									totalVerts++;	
-									indices.push_back(totalVerts - 1);	//Set index for this vertex
+									indices.push_back(totalVerts - 1);	
 								}
 
 								//Set first vertex
@@ -363,122 +366,15 @@ void CustomObj::LoadObjModel(std::wstring filename)
 									firstVIndex = indices[vIndex];
 								}
 
-								//If this was the last vertex in the first triangle, we will make sure the next triangle uses this one 
+								//If this was the last vertex in the triangle, make sure the next triangle uses this one 
 								if (i == 2)
 								{
-									lastVIndex = indices[vIndex];	//The last vertex index of this TRIANGLE
+									//The last vertex index of the current triangle
+									lastVIndex = indices[vIndex];	
 								}
-								vIndex++;	//Increment index count
-							}
-
-							meshTriangles++;	//One triangle down
-
-							//MAYBE DELETE?
-
-							//If there are more than three vertices in the face definition, we need to make sure
-							//we convert the face to triangles. We created our first triangle above, now we will
-							//create a new triangle for every new vertex in the face, using the very first vertex
-							//of the face, and the last vertex from the triangle before the current triangle
-							for (int l = 0; l < triangleCount - 1; ++l)	//Loop through the next vertices to create new triangles
-							{
-								//First vertex of this triangle (the very first vertex of the face too)
-								indices.push_back(firstVIndex);			//Set index for this vertex
-								vIndex++;
-
-								//Second Vertex of this triangle (the last vertex used in the tri before this one)
-								indices.push_back(lastVIndex);			//Set index for this vertex
-								vIndex++;
-
-								//Get the third vertex for this triangle
-								stringString >> vertexDefinition;
-
-								std::wstring vertPart;
-								int whichPart = 0;
-
-								//Parse this string (same as above)
-								for (int j = 0; j < vertexDefinition.length(); ++j)
-								{
-									if (vertexDefinition[j] != '/')
-									{
-										vertPart += vertexDefinition[j];
-									}
-									if (vertexDefinition[j] == '/' || j == vertexDefinition.length() - 1)
-									{
-										std::wistringstream wstringToInt(vertPart);
-
-										if (whichPart == 0)
-										{
-											wstringToInt >> vertPosIndexTemp;
-											vertPosIndexTemp -= 1;
-
-											//Check to see if the vert pos was the only thing specified
-											if (j == vertexDefinition.length() - 1)
-											{
-												vertTCIndexTemp = 0;
-												vertNormIndexTemp = 0;
-											}
-										}
-										else if (whichPart == 1)
-										{
-											if (vertPart != L"")
-											{
-												wstringToInt >> vertTCIndexTemp;
-												vertTCIndexTemp -= 1;
-											}
-											else
-											{
-												vertTCIndexTemp = 0;
-											}
-											if (j == vertexDefinition.length() - 1)
-											{
-												vertNormIndexTemp = 0;
-											}
-
-										}
-										else if (whichPart == 2)
-										{
-											std::wistringstream wstringToInt(vertPart);
-
-											wstringToInt >> vertNormIndexTemp;
-											vertNormIndexTemp -= 1;
-										}
-
-										vertPart = L"";
-										whichPart++;
-									}
-								}
-
-								//Check for duplicate vertices
-								bool vertAlreadyExists = false;
-								if (totalVerts >= 3)	//Make sure we at least have one triangle to check
-								{
-									for (int iCheck = 0; iCheck < totalVerts; ++iCheck)
-									{
-										if (vertPosIndexTemp == vertPosIndex[iCheck] && !vertAlreadyExists)
-										{
-											if (vertTCIndexTemp == vertTCIndex[iCheck])
-											{
-												indices.push_back(iCheck);			//Set index for this vertex
-												vertAlreadyExists = true;		//If we've made it here, the vertex already exists
-											}
-										}
-									}
-								}
-
-								if (!vertAlreadyExists)
-								{
-									vertPosIndex.push_back(vertPosIndexTemp);
-									vertTCIndex.push_back(vertTCIndexTemp);
-									vertNormIndex.push_back(vertNormIndexTemp);
-									totalVerts++;					//New vertex created, add to total verts
-									indices.push_back(totalVerts - 1);		//Set index for this vertex
-								}
-
-								//Set the second vertex for the next triangle to the last vertex we got		
-								lastVIndex = indices[vIndex];	//The last vertex index of this TRIANGLE
-
-								meshTriangles++;	//New triangle defined
-								vIndex++;
+								
+								//Increment index count
+								vIndex++;	
 							}
 						}
 					}
@@ -504,40 +400,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 										if (c == ' ')
 										{
 											//Store the material libraries file name
-											fileIn >> meshMatLib;
-										}
-									}
-								}
-							}
-						}
-					}
-
-					break;
-
-				case 'u':	//usemtl - which material to use
-					c = fileIn.get();
-					if (c == 's')
-					{
-						c = fileIn.get();
-						if (c == 'e')
-						{
-							c = fileIn.get();
-							if (c == 'm')
-							{
-								c = fileIn.get();
-								if (c == 't')
-								{
-									c = fileIn.get();
-									if (c == 'l')
-									{
-										c = fileIn.get();
-										if (c == ' ')
-										{
-											meshMaterialsTemp = L"";	//Make sure this is cleared
-
-											fileIn >> meshMaterialsTemp; //Get next type (string)
-
-											meshMaterials.push_back(meshMaterialsTemp);
+											fileIn >> mtl_filename;
 										}
 									}
 								}
@@ -552,27 +415,25 @@ void CustomObj::LoadObjModel(std::wstring filename)
 		}
 	}
 
-	//Make sure we have a default for the tex coord and normal
-	//if one or both are not specified
+	//Create default for the tex coord and normal
 	if (!hasNormals)
 	{
 		vertNorm.push_back(DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f));
 	}
-	if (!hasTexCoord)
+	if (!hasTexture)
 	{
 		vertTexCoord.push_back(DirectX::XMFLOAT2(0.0f, 0.0f));
 	}
 
 	//Close the obj file, and open the mtl file
 	fileIn.close();
-	fileIn.open(modelPath + meshMatLib.c_str());
+	fileIn.open(objectPath + mtl_filename.c_str());
 
-	std::wstring lastStringRead;
-	int matCount = material.size();	//total materials
+	//total materials
+	int matCount = material.size();	
 
-	//kdset - If our diffuse color was not set, we can use the ambient color (which is usually the same)
-	//If the diffuse color WAS set, then we don't need to set our diffuse color to ambient
-	bool kdset = false;
+	//kdset - If diffuse colour was not set, use the ambient colour
+	bool kdSet = false;
 
 	if (fileIn)
 	{
@@ -582,189 +443,191 @@ void CustomObj::LoadObjModel(std::wstring filename)
 
 			switch (c)
 			{
-				//Check for comment
-			case '#':
-				c = fileIn.get();
-				while (c != '\n')
+				//Check for comments
+				case '#':
 					c = fileIn.get();
-				break;
+					while (c != '\n')
+					{
+						c = fileIn.get();
+					}
+					break;
 
 				//Set diffuse color
-			case 'K':
-				c = fileIn.get();
-				if (c == 'd')	//Diffuse Color
-				{
-					c = fileIn.get();	//remove space
+				case 'K':
+					c = fileIn.get();
 
-					fileIn >> material[matCount - 1].difColor.x;
-					fileIn >> material[matCount - 1].difColor.y;
-					fileIn >> material[matCount - 1].difColor.z;
-
-					kdset = true;
-				}
-
-				//Ambient Color (We'll store it in diffuse if there isn't a diffuse already)
-				if (c == 'a')
-				{
-					c = fileIn.get();	//remove space
-					if (!kdset)
+					//Diffuse Color
+					if (c == 'd')	
 					{
+						//remove space
+						c = fileIn.get();	
+
 						fileIn >> material[matCount - 1].difColor.x;
 						fileIn >> material[matCount - 1].difColor.y;
 						fileIn >> material[matCount - 1].difColor.z;
+
+						kdSet = true;
 					}
-				}
-				break;
+
+					//Ambient Color
+					if (c == 'a')
+					{
+						//remove space
+						c = fileIn.get();	
+						if (!kdSet)
+						{
+							fileIn >> material[matCount - 1].difColor.x;
+							fileIn >> material[matCount - 1].difColor.y;
+							fileIn >> material[matCount - 1].difColor.z;
+						}
+					}
+					break;
 
 				//Check for transparency
-			case 'T':
-				c = fileIn.get();
-				if (c == 'r')
-				{
-					c = fileIn.get();	//remove space
-					float Transparency;
-					fileIn >> Transparency;
-
-					material[matCount - 1].difColor.w = Transparency;
-
-					if (Transparency > 0.0f)
-					{
-						material[matCount - 1].transparent = true;
-					}
-				}
-				break;
-
-				//Some obj files specify d for transparency
-			case 'd':
-				c = fileIn.get();
-				if (c == ' ')
-				{
-					float Transparency;
-					fileIn >> Transparency;
-
-					//'d' - 0 being most transparent, and 1 being opaque, opposite of Tr
-					Transparency = 1.0f - Transparency;
-
-					material[matCount - 1].difColor.w = Transparency;
-
-					if (Transparency > 0.0f)
-					{
-						material[matCount - 1].transparent = true;
-					}
-				}
-				break;
-
-			//Get the diffuse map (texture)
-			case 'm':
-				c = fileIn.get();
-				if (c == 'a')
-				{
+				case 'T':
 					c = fileIn.get();
-					if (c == 'p')
+					if (c == 'r')
 					{
+						//Remove space
 						c = fileIn.get();
-						if (c == '_')
+
+						float Transparency;
+						fileIn >> Transparency;
+
+						material[matCount - 1].difColor.w = Transparency;
+
+						if (Transparency > 0.0f)
 						{
-							//map_Kd - Diffuse map
-							c = fileIn.get();
-							if (c == 'K')
-							{
-								c = fileIn.get();
-								if (c == 'd')
-								{
-									//TEXTURE NAME
-									std::wstring fileNamePath;
-
-									//Remove whitespace between map_Kd and file
-									fileIn.get();	
-
-									//Get the file path - We read the pathname char by char since
-									//pathnames can sometimes contain spaces, so we will read until
-									//we find the file extension
-									bool texFilePathEnd = false;
-									while (!texFilePathEnd)
-									{
-										c = fileIn.get();
-
-										fileNamePath += c;
-
-										if (c == '.')
-										{
-											for (int i = 0; i < 3; ++i)
-											{
-												fileNamePath += fileIn.get();
-											}
-
-											texFilePathEnd = true;
-										}
-									}
-
-									textureName = fileNamePath;
-								}
-							}
-							//map_d - alpha map
-							else if (c == 'd')
-							{
-								//Alpha maps are usually the same as the diffuse map
-								//So we will assume that for now by only enabling
-								//transparency for this material, as we will already
-								//be using the alpha channel in the diffuse map
-								material[matCount - 1].transparent = true;
-							}
+							material[matCount - 1].transparent = true;
 						}
 					}
-				}
-				break;
+					break;
 
-			case 'n':	//newmtl - Declare new material
-				c = fileIn.get();
-				if (c == 'e')
-				{
+				//d is also used for transparancy
+				case 'd':
 					c = fileIn.get();
-					if (c == 'w')
+					if (c == ' ')
+					{
+						float Transparency;
+						fileIn >> Transparency;
+
+						//'d' - 0 being most transparent, and 1 being opaque, opposite of Tr
+						Transparency = 1.0f - Transparency;
+
+						material[matCount - 1].difColor.w = Transparency;
+
+						if (Transparency > 0.0f)
+						{
+							material[matCount - 1].transparent = true;
+						}
+					}
+					break;
+
+				//Get the texture or difuse map
+				case 'm':
+					c = fileIn.get();
+					if (c == 'a')
 					{
 						c = fileIn.get();
-						if (c == 'm')
+						if (c == 'p')
 						{
 							c = fileIn.get();
-							if (c == 't')
+							if (c == '_')
 							{
+								//map_Kd - Diffuse map
 								c = fileIn.get();
-								if (c == 'l')
+								if (c == 'K')
 								{
 									c = fileIn.get();
-									if (c == ' ')
+									if (c == 'd')
 									{
-										//New material, set its defaults
-										SurfaceMaterial tempMat;
-										material.push_back(tempMat);
-										fileIn >> material[matCount].matName;
-										matCount++;
-										kdset = false;
+										//Store texture name in a string
+										std::wstring textureString;
+
+										//Remove whitespace between map_Kd and fileName
+										fileIn.get();	
+
+										//Get texture name and file extension
+										do
+										{
+											c = fileIn.get();
+
+											textureString += c;
+
+											//Read in file extension
+											if (c == '.')
+											{
+												for (int i = 0; i < 3; ++i)
+												{
+													textureString += fileIn.get();
+												}
+											}
+										} while (c != '.');
+
+										textureName = textureString;
+									}
+								}
+
+								//map_d - Alpha map
+								else if (c == 'd')
+								{
+									//If mtl has an alpha map, enable transparency for difuse map
+									material[matCount - 1].transparent = true;
+								}
+							}
+						}
+					}
+					break;
+
+				//newmtl - Declare new material
+				case 'n':	
+					c = fileIn.get();
+					if (c == 'e')
+					{
+						c = fileIn.get();
+						if (c == 'w')
+						{
+							c = fileIn.get();
+							if (c == 'm')
+							{
+								c = fileIn.get();
+								if (c == 't')
+								{
+									c = fileIn.get();
+									if (c == 'l')
+									{
+										c = fileIn.get();
+										if (c == ' ')
+										{
+											//Create new material, set its defaults
+											SurfaceMaterial tempMat;
+											material.push_back(tempMat);
+											fileIn >> material[matCount].matName;
+											matCount++;
+											kdSet = false;
+										}
 									}
 								}
 							}
 						}
 					}
-				}
-				break;
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
 			}
-		}
 	}
 
-	Vertex tempVert;
-
-	//Create our vertices using the information we got 
-	//from the file and store them in a vector
+	//Create vertices from file
 	for (int j = 0; j < totalVerts; ++j)
 	{
-		tempVert.pos = vertPos[vertPosIndex[j]];
-		tempVert.normal = vertNorm[vertNormIndex[j]];
-		tempVert.texCoord = vertTexCoord[vertTCIndex[j]];
+		Vertex newVert;
 
-		vertices.push_back(tempVert);
+		newVert.pos = vertPos[vertPosIndex[j]];
+		newVert.normal = vertNorm[vertNormIndex[j]];
+		newVert.texCoord = vertTexCoord[vertTexCoordIndex[j]];
+
+		vertices.push_back(newVert);
 	}
 }

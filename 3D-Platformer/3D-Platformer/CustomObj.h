@@ -46,8 +46,12 @@ private:
 	float xRot = 0.0f;
 	float yRot = 0.0f;
 	float zRot = 0.0f;
+
 	//Model transform
 	DirectX::XMFLOAT3X3 modelTransform;
+
+	bool hasNormals;
+	bool hasTexture;
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned short> indices;
