@@ -10,11 +10,14 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _scaleX, float _scaleY, float _scaleZ) :
+CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _xScale, float _yScale, float _zScale) :
 	modelName(_modelName),
 	xPos(_x),
 	yPos(_y),
-	zPos(_z)
+	zPos(_z),
+	xScale(_xScale),
+	yScale(_yScale),
+	zScale(_zScale)
 {
 	LoadObjModel(_modelName);
 
@@ -84,7 +87,7 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 	//Model deformation transform (Instance)
 	DirectX::XMStoreFloat3x3(
 		&modelTransform,
-		DirectX::XMMatrixScaling(_scaleX, _scaleY, _scaleZ)
+		DirectX::XMMatrixScaling(xScale, yScale, zScale)
 	);
 
 	std::vector<DirectX::XMFLOAT3> verticePositions;

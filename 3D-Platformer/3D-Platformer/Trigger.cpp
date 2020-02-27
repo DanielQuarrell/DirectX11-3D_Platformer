@@ -10,12 +10,15 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-Trigger::Trigger(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z) :
+Trigger::Trigger(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z, float _xScale, float _yScale, float _zScale) :
 	textureName(_textureName),
 	xPos(_x),
 	yPos(_y),
 	yTarget(_y),
-	zPos(_z)
+	zPos(_z),
+	xScale(_xScale),
+	yScale(_yScale),
+	zScale(_zScale)
 {
 	//Create the vertex buffer
 	const float side = 0.5f;

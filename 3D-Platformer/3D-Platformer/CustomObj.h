@@ -42,6 +42,11 @@ private:
 	float yPos = 0.0f;
 	float zPos = 0.0f;
 
+	//Scale
+	float xScale = 1.0f;
+	float yScale = 1.0f;
+	float zScale = 1.0f;
+
 	//Rotation
 	float xRot = 0.0f;
 	float yRot = 0.0f;

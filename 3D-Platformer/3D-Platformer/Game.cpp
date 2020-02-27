@@ -7,7 +7,8 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 {
 	player = std::make_unique<Player>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 	camera = std::make_unique<Camera>(player.get());
-	button = std::make_unique<CustomObj>(wnd.Gfx(), L"BRB", 7.0f, 2.0f, 3.0f, 5.0, 5.0f, 5.0f);
+	flag = std::make_unique<CustomObj>(wnd.Gfx(), L"BRB", 7.0f, 2.0f, 3.0f, 5.0f, 5.0f, 5.0f);
+	boxboy = std::make_unique<Box>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 
 	InitialiseLevel(3);
 	//Set projection and camera
@@ -69,7 +70,7 @@ void Game::InitialiseLevel(int level_num)
 				}
 				else if (fileValue == -3.0f)
 				{
-					pressurePlate = std::make_unique<Trigger>(wnd.Gfx(), L"trigger.png", x, 2.5f, z);
+					pressurePlate = std::make_unique<TriggerObj>(wnd.Gfx(), L"BRB", x, 2.7f, z, 7.0f, 7.0f, 7.0f);
 					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 2.0f, z));
 				}
 				else if (fileValue == -4.0)
@@ -186,8 +187,11 @@ void Game::UpdateFrame()
 	pressurePlate->Update(dt);
 	pressurePlate->Draw(wnd.Gfx());
 
-	button->Update(dt);
-	button->Draw(wnd.Gfx());
+	flag->Update(dt);
+	flag->Draw(wnd.Gfx());
+
+	boxboy->Update(dt);
+	boxboy->Draw(wnd.Gfx());
 	
 	wnd.Gfx().EndFrame();
 }

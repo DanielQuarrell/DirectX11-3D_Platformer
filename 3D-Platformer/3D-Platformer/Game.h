@@ -2,9 +2,11 @@
 #include "Window.h"
 #include "Timer.h"
 #include "Camera.h"
+#include "Box.h"
 #include "TexturedBox.h"
 #include "Bridge.h"
 #include "Trigger.h"
+#include "TriggerObj.h"
 
 class Game
 {
@@ -24,9 +26,10 @@ private:
 	Timer timer;
 	std::vector<std::unique_ptr<class TexturedBox>> boxes;
 	std::vector<std::unique_ptr<class Bridge>> bridge;
-	std::unique_ptr<class Trigger> pressurePlate;
+	std::unique_ptr<class TriggerObj> pressurePlate;
+	std::unique_ptr<class CustomObj> flag;
 	std::unique_ptr<class Player> player;
 	std::unique_ptr<class Camera> camera;
 
-	std::unique_ptr<class CustomObj> button;
+	std::unique_ptr<class Box> boxboy;
 };

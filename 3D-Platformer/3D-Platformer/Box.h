@@ -21,7 +21,9 @@ private:
 	float yPos = 0.0f;
 	float zPos = 0.0f;
 	//Rotation
-	float eularX = 0.0f;
-	float eularY = 0.0f;
-	float eularZ = 0.0f;
+	float xRot = 0.0f;
+	float yRot = 0.0f;
+	float zRot = 0.0f;
+	//Model transform
+	DirectX::XMFLOAT3X3 modelTransform;
 };
