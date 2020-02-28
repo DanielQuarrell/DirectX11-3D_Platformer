@@ -24,27 +24,6 @@ TriggerObj::TriggerObj(Graphics& gfx, std::wstring _modelName, float _x, float _
 
 	if (!IsStaticInitialised())
 	{
-		//Calculate normals if 
-
-		if (!hasNormals)
-		{
-			for (size_t i = 0; i < indices.size(); i += 3)
-			{
-				Vertex& v0 = vertices[indices[i]];
-				Vertex& v1 = vertices[indices[i + 1]];
-				Vertex& v2 = vertices[indices[i + 2]];
-				const DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&v0.pos);
-				const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
-				const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
-
-				const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0)));
-
-				XMStoreFloat3(&v0.normal, n);
-				XMStoreFloat3(&v1.normal, n);
-				XMStoreFloat3(&v2.normal, n);
-			}
-		}
-
 		//Bind vertex buffer
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
 
@@ -177,9 +156,6 @@ void TriggerObj::LoadObjModel(std::wstring filename)
 	std::vector<int> vertPosIndex;
 	std::vector<int> vertNormIndex;
 	std::vector<int> vertTexCoordIndex;
-
-	//Make sure we have a default if no tex coords or normals are defined
-	bool hasTexture = false;
 
 	//Temp variables to store into vectors
 	int vertPosIndexTemp;

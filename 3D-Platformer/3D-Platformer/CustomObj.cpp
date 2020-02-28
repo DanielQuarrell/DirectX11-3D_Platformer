@@ -10,7 +10,7 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _xScale, float _yScale, float _zScale) :
+CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _xScale, float _yScale, float _zScale, bool _hasTexture) :
 	modelName(_modelName),
 	xPos(_x),
 	yPos(_y),
@@ -23,8 +23,7 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 
 	if (!IsStaticInitialised())
 	{
-		//Calculate normals if 
-		
+		//Calculate normals if Obj doesn't contain them
 		if (!hasNormals)
 		{
 			for (size_t i = 0; i < indices.size(); i += 3)
@@ -47,31 +46,118 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 		//Bind vertex buffer
 		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
 
-		//Bind texture from file
-		std::wstring imagePath = L"Images\\";
-		AddStaticBind(std::make_unique<Texture>(gfx, imagePath + textureName));
-
-		//Create vertex shader
-		auto pVertexShader = std::make_unique<VertexShader>(gfx, L"TextureVS.cso");
-		auto pVertexShaderBytecode = pVertexShader->GetBytecode();
-		AddStaticBind(std::move(pVertexShader));
-
-		//Create pixel shader
-		AddStaticBind(std::make_unique<PixelShader>(gfx, L"TexturePS.cso"));
-
-		//Bind index buffer
-		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
-
-		//Define Input layout
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc =
+		if (_hasTexture)
 		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		};
+			//Bind texture from file
+			std::wstring imagePath = L"Images\\";
+			AddStaticBind(std::make_unique<Texture>(gfx, imagePath + textureName));
 
-		//Bind Input vertex layout
-		AddStaticBind(std::make_unique<InputLayout>(gfx, inputElementDesc, pVertexShaderBytecode));
+			//Create vertex shader
+			auto pVertexShader = std::make_unique<VertexShader>(gfx, L"TextureVS.cso");
+			auto pVertexShaderBytecode = pVertexShader->GetBytecode();
+			AddStaticBind(std::move(pVertexShader));
+
+			//Create pixel shader
+			AddStaticBind(std::make_unique<PixelShader>(gfx, L"TexturePS.cso"));
+
+			//Bind index buffer
+			AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
+
+			//Define Input layout
+			const std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc =
+			{
+				{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+				{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+				{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			};
+
+			//Bind Input vertex layout
+			AddStaticBind(std::make_unique<InputLayout>(gfx, inputElementDesc, pVertexShaderBytecode));
+		}
+		else
+		{
+			//Calculate normals if Obj doesn't contain them
+
+			if (!hasNormals)
+			{
+				for (size_t i = 0; i < indices.size(); i += 3)
+				{
+					Vertex& v0 = vertices[indices[i]];
+					Vertex& v1 = vertices[indices[i + 1]];
+					Vertex& v2 = vertices[indices[i + 2]];
+					const DirectX::XMVECTOR p0 = DirectX::XMLoadFloat3(&v0.pos);
+					const DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&v1.pos);
+					const DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&v2.pos);
+
+					const DirectX::XMVECTOR n = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(DirectX::XMVectorSubtract(p1, p0), DirectX::XMVectorSubtract(p2, p0)));
+
+					XMStoreFloat3(&v0.normal, n);
+					XMStoreFloat3(&v1.normal, n);
+					XMStoreFloat3(&v2.normal, n);
+				}
+			}
+
+			//Create vertex shader
+			auto pVertexShader = std::make_unique<VertexShader>(gfx, L"ColorIndexVS.cso");
+			auto pVertexShaderBytecode = pVertexShader->GetBytecode();
+			AddStaticBind(std::move(pVertexShader));
+
+			//Create pixel shader
+			AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndexPS.cso"));
+
+
+			AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
+			
+			struct colour
+			{
+				float r;
+				float g;
+				float b;
+				float a;
+			};
+
+			struct ConstantBuffer2
+			{
+				colour face_colors[3000];
+			};
+
+			std::vector<colour> face_colors_override;
+			
+			for (size_t i = 0; i < surfaceMaterials.size(); i++)
+			{
+				for (size_t j = 0; j < materials.size(); j++)
+				{
+					if (surfaceMaterials[i].matName == materials[j].matName)
+					{
+						for (int f = 0; f < surfaceMaterials[i].numOfFaces; f++)
+						{
+							if (materials[j].difColor.w < 0)
+							{
+								materials[j].difColor.w = 1.0f;
+							}
+
+							face_colors_override.push_back({ materials[j].difColor.x, materials[j].difColor.y, materials[j].difColor.z, materials[j].difColor.w });
+						}
+					}
+				}
+			}
+
+			ConstantBuffer2 cb2;
+			std::copy(face_colors_override.begin(), face_colors_override.end(), cb2.face_colors);
+			
+			//Bind Constant buffer to the pixel shader
+			AddStaticBind(std::make_unique<PixelConstantBuffer<ConstantBuffer2>>(gfx, cb2));
+
+			//Define Input layout
+			const std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDesc =
+			{
+				{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+				{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			};
+
+			//Bind Input vertex layout
+			AddStaticBind(std::make_unique<InputLayout>(gfx, inputElementDesc, pVertexShaderBytecode));
+		}
 
 		//Set primitive topology to triangle list
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
@@ -91,9 +177,9 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 	);
 
 	std::vector<DirectX::XMFLOAT3> verticePositions;
-	for (int i = 0; i < vertices.size(); i++)
+	for (int v = 0; v < vertices.size(); v++)
 	{
-		verticePositions.push_back(vertices[i].pos);
+		verticePositions.push_back(vertices[v].pos);
 	}
 
 	CreateBoundingBox(verticePositions);
@@ -109,6 +195,7 @@ void CustomObj::SetPosition(float _x, float _y, float _z)
 
 void CustomObj::Update(float dt) noexcept
 {
+	yRot += dt;
 }
 
 DirectX::XMMATRIX CustomObj::GetTransformXM() const noexcept
@@ -139,20 +226,20 @@ void CustomObj::LoadObjModel(std::wstring filename)
 	std::vector<int> vertNormIndex;
 	std::vector<int> vertTexCoordIndex;
 
-	//Make sure we have a default if no tex coords or normals are defined
-	bool hasTexture = false;
-
 	//Temp variables to store into vectors
 	int vertPosIndexTemp;
 	int vertNormIndexTemp;
-	int vertTCIndexTemp;
+	int vertTexCoordIndexTemp;
 
-	
+
 	wchar_t c;				//Current character to check against
 	std::wstring face;		//Holds the string containing our face vertices
 	int vIndex = 0;			//Keep track of our vertex index count
 	int triangleCount = 0;	//Total Triangles
 	int totalVerts = 0;		//Total Verticies
+
+	//total surface materials
+	int surfaceMatCount = 0;
 
 	//Check to see if the file was opened
 	if (fileIn)
@@ -208,9 +295,50 @@ void CustomObj::LoadObjModel(std::wstring filename)
 					}
 					break;
 
+				case 'u':
+					c = fileIn.get();
+					if (c == 's')
+					{
+						c = fileIn.get();
+						if (c == 'e')
+						{
+							c = fileIn.get();
+							if (c == 'm')
+							{
+								c = fileIn.get();
+								if (c == 't')
+								{
+									c = fileIn.get();
+									if (c == 'l')
+									{
+										c = fileIn.get();
+										if (c == ' ')
+										{
+											//Define material to use for the next set of faces
+											SurfaceMaterial tempSurfaceMat;
+											surfaceMaterials.push_back(tempSurfaceMat);
+											fileIn >> surfaceMaterials[surfaceMatCount].matName;
+											surfaceMaterials[surfaceMatCount].numOfFaces = 0;
+
+											surfaceMatCount++;
+										}
+									}
+								}
+							}
+						}
+					}
+					break;
+
 				//Get Face Indexes
 				case 'f':	
-					
+					if (surfaceMaterials.size() != 0)
+					{
+						//Number of faces using this material
+						surfaceMaterials[surfaceMatCount - 1].numOfFaces++;
+					}
+
+					totalFaces++;
+
 					//f - defines the faces
 					c = fileIn.get();
 					if (c == ' ')
@@ -287,7 +415,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 											if (j == vertexDefinition.length() - 1)
 											{
 												vertNormIndexTemp = 0;
-												vertTCIndexTemp = 0;
+												vertTexCoordIndexTemp = 0;
 											}
 										}
 
@@ -297,14 +425,14 @@ void CustomObj::LoadObjModel(std::wstring filename)
 											//Check to see if there even is a tex coord
 											if (vertPart != L"")	
 											{
-												wstringToInt >> vertTCIndexTemp;
+												wstringToInt >> vertTexCoordIndexTemp;
 												//Change array start position from 1 to 0
-												vertTCIndexTemp -= 1;	
+												vertTexCoordIndexTemp -= 1;	
 											}
 											//If there is no texture coordinate, make a default
 											else	
 											{
-												vertTCIndexTemp = 0;
+												vertTexCoordIndexTemp = 0;
 											}
 
 											//If the current char is the second to last, there is no normal
@@ -343,7 +471,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 										//Check if it has already been loaded
 										if (vertPosIndexTemp == vertPosIndex[iCheck] && !vertexExists)
 										{
-											if (vertTCIndexTemp == vertTexCoordIndex[iCheck])
+											if (vertTexCoordIndexTemp == vertTexCoordIndex[iCheck])
 											{
 												indices.push_back(iCheck);	//Set index for this vertex
 												vertexExists = true;		
@@ -356,7 +484,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 								if (!vertexExists)
 								{
 									vertPosIndex.push_back(vertPosIndexTemp);
-									vertTexCoordIndex.push_back(vertTCIndexTemp);
+									vertTexCoordIndex.push_back(vertTexCoordIndexTemp);
 									vertNormIndex.push_back(vertNormIndexTemp);
 
 									totalVerts++;	
@@ -378,6 +506,111 @@ void CustomObj::LoadObjModel(std::wstring filename)
 								
 								//Increment index count
 								vIndex++;	
+							}
+
+							//Create new triangles for every new vertex in the face
+							for (int l = 0; l < triangleCount - 1; l++)
+							{
+								//Set index for first vertex
+								indices.push_back(firstVIndex);            
+								vIndex++;
+
+								//Set index for second vertex (Last index of previous triangle)
+								indices.push_back(lastVIndex);           
+								vIndex++;
+
+								//Get third vertex for this triangle
+								stringStream >> vertexDefinition;
+
+								std::wstring vertPart;
+								int whichPart = 0;
+
+								//Parse string 
+								for (int j = 0; j < vertexDefinition.length(); ++j)
+								{
+									if (vertexDefinition[j] != '/')
+									{
+										vertPart += vertexDefinition[j];
+									}
+									if (vertexDefinition[j] == '/' || j == vertexDefinition.length() - 1)
+									{
+										std::wistringstream wstringToInt(vertPart);
+
+										if (whichPart == 0)
+										{
+											wstringToInt >> vertPosIndexTemp;
+											vertPosIndexTemp -= 1;
+
+											//Check to see if the vert pos was the only thing specified
+											if (j == vertexDefinition.length() - 1)
+											{
+												vertTexCoordIndexTemp = 0;
+												vertNormIndexTemp = 0;
+											}
+										}
+										else if (whichPart == 1)
+										{
+											if (vertPart != L"")
+											{
+												wstringToInt >> vertTexCoordIndexTemp;
+												vertTexCoordIndexTemp -= 1;
+											}
+											else
+											{
+												vertTexCoordIndexTemp = 0;
+											}
+											if (j == vertexDefinition.length() - 1)
+											{
+												vertNormIndexTemp = 0;
+											}
+										}
+										else if (whichPart == 2)
+										{
+											std::wistringstream wstringToInt(vertPart);
+
+											wstringToInt >> vertNormIndexTemp;
+											vertNormIndexTemp -= 1;
+										}
+
+										vertPart = L"";
+										whichPart++;
+									}
+								}
+
+								//Check for duplicate vertices
+								bool vertAlreadyExists = false;
+								//Make sure a triangle exists to check
+								if (totalVerts >= 3)    
+								{
+									for (int iCheck = 0; iCheck < totalVerts; ++iCheck)
+									{
+										if (vertPosIndexTemp == vertPosIndex[iCheck] && !vertAlreadyExists)
+										{
+											if (vertTexCoordIndexTemp == vertTexCoordIndex[iCheck])
+											{
+												//Set index for this vertex
+												indices.push_back(iCheck);            
+												vertAlreadyExists = true; 
+											}
+										}
+									}
+								}
+
+								if (!vertAlreadyExists)
+								{
+									vertPosIndex.push_back(vertPosIndexTemp);
+									vertTexCoordIndex.push_back(vertTexCoordIndexTemp);
+									vertNormIndex.push_back(vertNormIndexTemp);
+
+									totalVerts++;              
+									//Set index for this vertex
+									indices.push_back(totalVerts - 1);        
+								}
+
+								//Set the second vertex for the next triangle      
+								lastVIndex = indices[vIndex];
+
+								vIndex++;
 							}
 						}
 					}
@@ -433,7 +666,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 	fileIn.open(objectPath + mtl_filename.c_str());
 
 	//total materials
-	int matCount = material.size();	
+	int matCount = 0;
 
 	//kdset - If diffuse colour was not set, use the ambient colour
 	bool kdSet = false;
@@ -465,9 +698,9 @@ void CustomObj::LoadObjModel(std::wstring filename)
 						//remove space
 						c = fileIn.get();	
 
-						fileIn >> material[matCount - 1].difColor.x;
-						fileIn >> material[matCount - 1].difColor.y;
-						fileIn >> material[matCount - 1].difColor.z;
+						fileIn >> materials[matCount - 1].difColor.x;
+						fileIn >> materials[matCount - 1].difColor.y;
+						fileIn >> materials[matCount - 1].difColor.z;
 
 						kdSet = true;
 					}
@@ -479,9 +712,9 @@ void CustomObj::LoadObjModel(std::wstring filename)
 						c = fileIn.get();	
 						if (!kdSet)
 						{
-							fileIn >> material[matCount - 1].difColor.x;
-							fileIn >> material[matCount - 1].difColor.y;
-							fileIn >> material[matCount - 1].difColor.z;
+							fileIn >> materials[matCount - 1].difColor.x;
+							fileIn >> materials[matCount - 1].difColor.y;
+							fileIn >> materials[matCount - 1].difColor.z;
 						}
 					}
 					break;
@@ -497,11 +730,11 @@ void CustomObj::LoadObjModel(std::wstring filename)
 						float Transparency;
 						fileIn >> Transparency;
 
-						material[matCount - 1].difColor.w = Transparency;
+						materials[matCount - 1].difColor.w = Transparency;
 
 						if (Transparency > 0.0f)
 						{
-							material[matCount - 1].transparent = true;
+							materials[matCount - 1].transparent = true;
 						}
 					}
 					break;
@@ -517,11 +750,11 @@ void CustomObj::LoadObjModel(std::wstring filename)
 						//'d' - 0 being most transparent, and 1 being opaque, opposite of Tr
 						Transparency = 1.0f - Transparency;
 
-						material[matCount - 1].difColor.w = Transparency;
+						materials[matCount - 1].difColor.w = Transparency;
 
 						if (Transparency > 0.0f)
 						{
-							material[matCount - 1].transparent = true;
+							materials[matCount - 1].transparent = true;
 						}
 					}
 					break;
@@ -575,7 +808,7 @@ void CustomObj::LoadObjModel(std::wstring filename)
 								else if (c == 'd')
 								{
 									//If mtl has an alpha map, enable transparency for difuse map
-									material[matCount - 1].transparent = true;
+									materials[matCount - 1].transparent = true;
 								}
 							}
 						}
@@ -603,9 +836,9 @@ void CustomObj::LoadObjModel(std::wstring filename)
 										if (c == ' ')
 										{
 											//Create new material, set its defaults
-											SurfaceMaterial tempMat;
-											material.push_back(tempMat);
-											fileIn >> material[matCount].matName;
+											Material tempMat;
+											materials.push_back(tempMat);
+											fileIn >> materials[matCount].matName;
 											matCount++;
 											kdSet = false;
 										}
@@ -628,8 +861,8 @@ void CustomObj::LoadObjModel(std::wstring filename)
 		Vertex newVert;
 
 		newVert.pos = vertPos[vertPosIndex[j]];
-		newVert.normal = vertNorm[vertNormIndex[j]];
 		newVert.texCoord = vertTexCoord[vertTexCoordIndex[j]];
+		newVert.normal = vertNorm[vertNormIndex[j]];
 
 		vertices.push_back(newVert);
 	}

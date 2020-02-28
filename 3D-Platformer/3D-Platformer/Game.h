@@ -27,9 +27,9 @@ private:
 	std::vector<std::unique_ptr<class TexturedBox>> boxes;
 	std::vector<std::unique_ptr<class Bridge>> bridge;
 	std::unique_ptr<class TriggerObj> pressurePlate;
-	std::unique_ptr<class CustomObj> flag;
+	std::unique_ptr<class CustomObj> goal;
 	std::unique_ptr<class Player> player;
 	std::unique_ptr<class Camera> camera;
 
-	std::unique_ptr<class Box> boxboy;
+	std::unique_ptr<class Box> colourbox;
 };

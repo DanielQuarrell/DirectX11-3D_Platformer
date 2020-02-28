@@ -7,7 +7,7 @@
 class CustomObj : public GameObjectBase<CustomObj>
 {
 public:
-	CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _scaleX, float _scaleY, float _scaleZ);
+	CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _scaleX, float _scaleY, float _scaleZ, bool _hasTexture);
 	void LoadObjModel(std::wstring filename);
 	void SetPosition(float x, float y, float z);
 	void Update(float dt) noexcept override;
@@ -27,15 +27,22 @@ private:
 		DirectX::XMFLOAT3 normal;
 	};
 
-	//Material structure
 	struct SurfaceMaterial
+	{
+		std::wstring matName;
+		int numOfFaces;
+	};
+
+	//Material structure
+	struct Material
 	{
 		std::wstring matName;
 		DirectX::XMFLOAT4 difColor;
 		bool transparent;
 	};
 
-	std::vector<SurfaceMaterial> material;
+	std::vector<Material> materials;
+	std::vector<SurfaceMaterial> surfaceMaterials;
 
 	//Position
 	float xPos = 0.0f;
@@ -57,6 +64,7 @@ private:
 
 	bool hasNormals;
 	bool hasTexture;
+	float totalFaces;
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned short> indices;

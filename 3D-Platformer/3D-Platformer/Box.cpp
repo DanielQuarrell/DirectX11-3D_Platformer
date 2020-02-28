@@ -210,6 +210,8 @@ void Box::SetEularZ(float angle)
 
 void Box::Update(float dt) noexcept
 {
+	yRot += dt;
+
 	xPos += xVel * dt;
 	yPos += yVel * dt;
 	zPos += zVel * dt;

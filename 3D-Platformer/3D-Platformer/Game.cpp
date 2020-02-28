@@ -7,8 +7,7 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 {
 	player = std::make_unique<Player>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 	camera = std::make_unique<Camera>(player.get());
-	flag = std::make_unique<CustomObj>(wnd.Gfx(), L"BRB", 7.0f, 2.0f, 3.0f, 5.0f, 5.0f, 5.0f);
-	boxboy = std::make_unique<Box>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
+	colourbox = std::make_unique<Box>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 
 	InitialiseLevel(3);
 	//Set projection and camera
@@ -65,7 +64,7 @@ void Game::InitialiseLevel(int level_num)
 					float spawnZ = z;
 					player->SetSpawnPosition(spawnX, spawnY, spawnZ);
 					player->SetPosition(spawnX, spawnY, spawnZ);
-
+					
 					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 0.0f, z));
 				}
 				else if (fileValue == -3.0f)
@@ -76,6 +75,11 @@ void Game::InitialiseLevel(int level_num)
 				else if (fileValue == -4.0)
 				{
 					bridge.push_back(std::make_unique<Bridge>(wnd.Gfx(), L"bridge.png", x, 0.0f, z));
+				}
+				else if (fileValue == -6.0f)
+				{
+					goal = std::make_unique<CustomObj>(wnd.Gfx(), L"CHAHIN_BOTTLE_OF_SODA", x, 7.5f, z, 0.25f, 0.25f, 0.25f, true);
+					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 6.0f, z));
 				}
 				else
 				{
@@ -168,6 +172,7 @@ void Game::UpdateFrame()
 	}
 
 	player->Update(dt);
+	
 	//Camera movement
 	UpdateCamera(dt);
 	player->Draw(wnd.Gfx());
@@ -187,11 +192,11 @@ void Game::UpdateFrame()
 	pressurePlate->Update(dt);
 	pressurePlate->Draw(wnd.Gfx());
 
-	flag->Update(dt);
-	flag->Draw(wnd.Gfx());
+	goal->Update(dt);
+	goal->Draw(wnd.Gfx());
 
-	boxboy->Update(dt);
-	boxboy->Draw(wnd.Gfx());
+	colourbox->Update(dt);
+	colourbox->Draw(wnd.Gfx());
 	
 	wnd.Gfx().EndFrame();
 }
