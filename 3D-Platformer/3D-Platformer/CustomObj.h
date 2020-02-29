@@ -7,7 +7,7 @@
 class CustomObj : public GameObjectBase<CustomObj>
 {
 public:
-	CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _scaleX, float _scaleY, float _scaleZ, bool _hasTexture);
+	CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _yRot, float _scaleX, float _scaleY, float _scaleZ, bool _hasTexture, bool _hasLighting);
 	void LoadObjModel(std::wstring filename);
 	void SetPosition(float x, float y, float z);
 	void Update(float dt) noexcept override;

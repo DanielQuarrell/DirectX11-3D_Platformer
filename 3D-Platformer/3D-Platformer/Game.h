@@ -26,6 +26,7 @@ private:
 	Timer timer;
 	std::vector<std::unique_ptr<class TexturedBox>> boxes;
 	std::vector<std::unique_ptr<class Bridge>> bridge;
+	std::vector<std::unique_ptr<class Collectable>> collectables;
 	std::unique_ptr<class TriggerObj> pressurePlate;
 	std::unique_ptr<class CustomObj> goal;
 	std::unique_ptr<class Player> player;

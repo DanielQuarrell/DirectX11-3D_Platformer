@@ -13,8 +13,9 @@
 Bridge::Bridge(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z) :
 	textureName(_textureName),
 	xPos(_x),
-	yPos(_y),
-	yTarget(_y),
+	yPos(0),
+	yTarget(0),
+	bridgeHeight(_y),
 	zPos(_z)
 {
 	//Create the vertex buffer
@@ -167,9 +168,9 @@ void Bridge::SetPosition(float _x, float _y, float _z)
 	zPos = _z;
 }
 
-void Bridge::MoveTowards(float _yTarget, float _speed)
+void Bridge::RaiseBridge(float _speed)
 {
-	yTarget = _yTarget;
+	yTarget = bridgeHeight;
 	speed = _speed;
 }
 

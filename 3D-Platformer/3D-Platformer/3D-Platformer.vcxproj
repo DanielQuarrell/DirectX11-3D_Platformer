@@ -145,6 +145,7 @@
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Collectable.cpp" />
     <ClCompile Include="CustomObj.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="ExceptionHandler.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="Bridge.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collectable.h" />
     <ClInclude Include="ConstantBuffers.h" />
     <ClInclude Include="CustomObj.h" />
     <ClInclude Include="DirectionalLight.h" />
@@ -198,6 +200,14 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="ColorIndex2PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="ColorIndexPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

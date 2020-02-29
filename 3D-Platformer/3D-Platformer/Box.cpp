@@ -147,7 +147,7 @@ Box::Box(Graphics& gfx, float _x, float _y, float _z) :
 				{ 0.0f,0.0f,1.0f },
 				{ 1.0f,1.0f,0.0f },
 				{ 0.0f,1.0f,1.0f },
-			}
+			},
 		};
 		//Bind Constant buffer to the pixel shader
 		AddStaticBind(std::make_unique<PixelConstantBuffer<ConstantBuffer2>>(gfx, cb2));

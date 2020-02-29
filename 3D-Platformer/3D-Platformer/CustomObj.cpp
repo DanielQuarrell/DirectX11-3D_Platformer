@@ -10,19 +10,20 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _xScale, float _yScale, float _zScale, bool _hasTexture) :
+CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _yRot, float _xScale, float _yScale, float _zScale, bool _hasTexture, bool _hasLighting) :
 	modelName(_modelName),
 	xPos(_x),
 	yPos(_y),
 	zPos(_z),
+	yRot(_yRot),
 	xScale(_xScale),
 	yScale(_yScale),
 	zScale(_zScale)
 {
-	LoadObjModel(_modelName);
-
 	if (!IsStaticInitialised())
 	{
+		LoadObjModel(_modelName);
+
 		//Calculate normals if Obj doesn't contain them
 		if (!hasNormals)
 		{
@@ -102,8 +103,17 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 			auto pVertexShaderBytecode = pVertexShader->GetBytecode();
 			AddStaticBind(std::move(pVertexShader));
 
-			//Create pixel shader
-			AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndexPS.cso"));
+			if (_hasLighting)
+			{
+				//Create pixel shader
+				AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndexPS.cso"));
+			}
+			else
+			{
+				//Create pixel shader
+				AddStaticBind(std::make_unique<PixelShader>(gfx, L"ColorIndex2PS.cso"));
+			}
+
 
 
 			AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
@@ -195,7 +205,6 @@ void CustomObj::SetPosition(float _x, float _y, float _z)
 
 void CustomObj::Update(float dt) noexcept
 {
-	yRot += dt;
 }
 
 DirectX::XMMATRIX CustomObj::GetTransformXM() const noexcept

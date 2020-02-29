@@ -7,7 +7,7 @@ class Bridge : public GameObjectBase<Bridge>
 public:
 	Bridge(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z);
 	void SetPosition(float x, float y, float z);
-	void MoveTowards(float _yTarget, float _speed);
+	void RaiseBridge(float _speed);
 	void SetEularX(float angle);
 	void SetEularY(float angle);
 	void SetEularZ(float angle);
@@ -35,6 +35,8 @@ private:
 
 	float speed = 1.0f;
 	float yTarget = 0.0f;
+	float bridgeHeight = 0.0f;
+
 	//Rotation
 	float xRot = 0.0f;
 	float yRot = 0.0f;

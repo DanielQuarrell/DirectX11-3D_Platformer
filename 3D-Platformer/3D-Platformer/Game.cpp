@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Player.h"
 #include "CustomObj.h"
+#include "Collectable.h"
 #include <fstream>
 
 Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
@@ -34,11 +35,16 @@ int Game::Start()
 
 void Game::InitialiseLevel(int level_num)
 {
-	std::string file_name = "";
-	std::fstream path_file;
-	file_name.append("Resources\\Level" + std::to_string(level_num) + ".txt");
+	std::string levelFileName = "";
+	std::fstream levelFile;
+	levelFileName.append("Resources\\Level" + std::to_string(level_num) + ".txt");
 
-	path_file.open(file_name);
+	std::string itemFileName = "";
+	std::fstream itemFile;
+	itemFileName.append("Resources\\Level" + std::to_string(level_num) + "_Items" + ".txt");
+
+	levelFile.open(levelFileName);
+	itemFile.open(itemFileName);
 
 	float levelWidth = 13;
 	float levelHeight = 30;
@@ -47,48 +53,56 @@ void Game::InitialiseLevel(int level_num)
 	float y = 0;
 	float z = 0;
 
-	while (!path_file.eof())
+	while (!levelFile.eof())
 	{
 		float fileValue;
+		float itemValue;
 
-		if (path_file >> fileValue)
+		if (levelFile >> fileValue)
 		{
-			if (fileValue != -1.0f)
+			if (itemFile >> itemValue)
 			{
-				float numberOfBoxes;
-
-				if (fileValue == -2.0f)
+				if (fileValue != -1.0f)
 				{
-					float spawnX = x;
-					float spawnY = 2;
-					float spawnZ = z;
-					player->SetSpawnPosition(spawnX, spawnY, spawnZ);
-					player->SetPosition(spawnX, spawnY, spawnZ);
-					
-					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 0.0f, z));
-				}
-				else if (fileValue == -3.0f)
-				{
-					pressurePlate = std::make_unique<TriggerObj>(wnd.Gfx(), L"BRB", x, 2.7f, z, 7.0f, 7.0f, 7.0f);
-					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 2.0f, z));
-				}
-				else if (fileValue == -4.0)
-				{
-					bridge.push_back(std::make_unique<Bridge>(wnd.Gfx(), L"bridge.png", x, 0.0f, z));
-				}
-				else if (fileValue == -6.0f)
-				{
-					goal = std::make_unique<CustomObj>(wnd.Gfx(), L"CHAHIN_BOTTLE_OF_SODA", x, 7.5f, z, 0.25f, 0.25f, 0.25f, true);
-					boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, 6.0f, z));
-				}
-				else
-				{
-					numberOfBoxes = fileValue;
-
-					for (int yVal = 0; yVal <= numberOfBoxes; yVal++)
+					if (fileValue >= 0)
 					{
-						y = yVal;
-						boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
+						float numberOfBoxes = fileValue;
+
+						for (int yVal = 0; yVal <= numberOfBoxes; yVal++)
+						{
+							y = yVal;
+							boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
+						}
+					}
+					else
+					{
+						y = fileValue * -1;
+						bridge.push_back(std::make_unique<Bridge>(wnd.Gfx(), L"bridge.png", x, y, z));
+					}
+
+					//Player
+					if (itemValue == 2.0f)
+					{
+						float spawnX = x;
+						float spawnY = y + 1;
+						float spawnZ = z;
+						player->SetSpawnPosition(spawnX, spawnY, spawnZ);
+						player->SetPosition(spawnX, spawnY, spawnZ);
+					}
+					//Collectable
+					else if (itemValue == 3.0f)
+					{
+						collectables.push_back(std::make_unique<Collectable>(wnd.Gfx(), L"CHAHIN_BOTTLE_OF_SODA", x, y + 1.5f, z, 0.25f, 0.25f, 0.25f, true, true));
+					}
+					//Trigger
+					else if (itemValue == 4.0)
+					{
+						pressurePlate = std::make_unique<TriggerObj>(wnd.Gfx(), L"BRB", x, y + 0.7f, z, 7.0f, 7.0f, 7.0f);
+					}
+					//Goal
+					else if (itemValue == 5.0f)
+					{
+						goal = std::make_unique<CustomObj>(wnd.Gfx(), L"flag", x + 4.5f, y + 0.5f, z, DirectX::XM_PI, 0.25f, 0.25f, 0.25f, false, false);
 					}
 				}
 			}
@@ -96,10 +110,11 @@ void Game::InitialiseLevel(int level_num)
 		else
 		{
 			//error with file loading
-			path_file.close();
+			levelFile.close();
 			return;
 		}
 
+		//Change position of next object
 		x += 1.0f;
 
 		if (x >= levelWidth)
@@ -109,7 +124,7 @@ void Game::InitialiseLevel(int level_num)
 		}
 
 	}
-	path_file.close();
+	levelFile.close();
 	return;
 }
 
@@ -134,7 +149,7 @@ void Game::UpdateFrame()
 
 			for (auto& bridgePiece : bridge)
 			{
-				bridgePiece->MoveTowards(3.0f, 1.0f);
+				bridgePiece->RaiseBridge(1.0f);
 			}
 		}
 	}
@@ -171,6 +186,20 @@ void Game::UpdateFrame()
 		}
 	}
 
+	for (auto& collectable : collectables)
+	{
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = collectable->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = collectable->GetBBMaxVertex();
+
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			collectable->SetVisibility(false);
+		}
+	}
+
+
 	player->Update(dt);
 	
 	//Camera movement
@@ -187,6 +216,12 @@ void Game::UpdateFrame()
 	{
 		bridgePiece->Update(dt);
 		bridgePiece->Draw(wnd.Gfx());
+	}
+
+	for (auto& collectable : collectables)
+	{
+		collectable->Update(dt);
+		collectable->Draw(wnd.Gfx());
 	}
 
 	pressurePlate->Update(dt);
