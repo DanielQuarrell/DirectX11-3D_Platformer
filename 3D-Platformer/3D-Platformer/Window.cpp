@@ -60,7 +60,7 @@ Window::Window(int width, int height, const char* name)
 		nullptr, nullptr, WindowClass::GetInstance(), this
 	);
 
-	// check for error
+	//Check for error
 	if (hWnd == nullptr)
 	{
 		throw Window::Exception(__LINE__, __FILE__, GetLastError());

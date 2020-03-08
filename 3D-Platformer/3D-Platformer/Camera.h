@@ -18,5 +18,6 @@ private:
 	float yaw = 0.0f;
 	float roll = 0.0f;
 
+	//Pointer reference to the player to access its transform matrix
 	Player* player = nullptr;
 };

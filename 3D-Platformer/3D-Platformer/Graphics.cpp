@@ -51,7 +51,7 @@ Graphics::Graphics(HWND hWnd)
 
 	pBackBuffer->Release();
 
-	// create depth stensil state
+	// Create depth stensil state
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 	dsDesc.DepthEnable = TRUE;
 	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -61,7 +61,7 @@ Graphics::Graphics(HWND hWnd)
 
 	pContext->OMSetDepthStencilState(pDSState, 1u);
 
-	// create depth stensil texture
+	// Create depth stensil texture
 	ID3D11Texture2D* pDepthStencil;
 	D3D11_TEXTURE2D_DESC descDepth = {};
 	descDepth.Width = 800u;

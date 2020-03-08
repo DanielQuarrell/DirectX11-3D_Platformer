@@ -96,7 +96,7 @@ void GameObject::CalculateAABB(DirectX::XMMATRIX transformMatrix)
 		maxVertex.z = max(maxVertex.z, DirectX::XMVectorGetZ(vert));
 	}
 
-	// Compute distance between maxVertex and minVertex
+	//Compute distance between maxVertex and minVertex
 	bbWidth = (maxVertex.x - minVertex.x);
 	bbHeight = (maxVertex.y - minVertex.y);
 	bbDepth = (maxVertex.z - minVertex.z);
