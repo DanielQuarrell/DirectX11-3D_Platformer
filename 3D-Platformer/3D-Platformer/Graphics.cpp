@@ -45,45 +45,46 @@ Graphics::Graphics(HWND hWnd)
 		nullptr,								//Pointer to D3D_FEATURE_LEVEL (Used for backwards compatibility)
 		&pContext);
 
+	//Gain access to the back buffer texture subresource in the swap chain
 	ID3D11Resource* pBackBuffer = nullptr;
 	pSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), (void**)&pBackBuffer);
-	pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTarget);
+	pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
 
 	pBackBuffer->Release();
 
-	// Create depth stensil state
-	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = TRUE;
-	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	//Create depth stensil state
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	ID3D11DepthStencilState* pDSState;
-	pDevice->CreateDepthStencilState(&dsDesc, &pDSState);
+	pDevice->CreateDepthStencilState(&depthStencilDesc, &pDSState);
 
 	pContext->OMSetDepthStencilState(pDSState, 1u);
 
-	// Create depth stensil texture
+	//Create depth stensil texture
 	ID3D11Texture2D* pDepthStencil;
-	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = 800u;
-	descDepth.Height = 600u;
-	descDepth.MipLevels = 1u;
-	descDepth.ArraySize = 1u;
-	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
-	descDepth.SampleDesc.Count = 1u;
-	descDepth.SampleDesc.Quality = 0u;
-	descDepth.Usage = D3D11_USAGE_DEFAULT;
-	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil);
+	D3D11_TEXTURE2D_DESC depthDesc = {};
+	depthDesc.Width = 800u;
+	depthDesc.Height = 600u;
+	depthDesc.MipLevels = 1u;
+	depthDesc.ArraySize = 1u;
+	depthDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthDesc.SampleDesc.Count = 1u;
+	depthDesc.SampleDesc.Quality = 0u;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	pDevice->CreateTexture2D(&depthDesc, nullptr, &pDepthStencil);
 
-	// create view of depth stensil texture
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0u;
-	pDevice->CreateDepthStencilView(pDepthStencil, &descDSV, &pDSV);
+	//Create view of depth stensil texture
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
+	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0u;
+	pDevice->CreateDepthStencilView(pDepthStencil, &depthStencilViewDesc, &pDepthStencilView);
 
-	//Bind depth stensil view to OM
-	pContext->OMSetRenderTargets(1u, &pRenderTarget, pDSV);
+	//Bind depth stensil view to output merger
+	pContext->OMSetRenderTargets(1u, &pRenderTargetView, pDepthStencilView);
 
 	//Configure viewport
 	D3D11_VIEWPORT viewport;
@@ -117,13 +118,13 @@ Graphics::~Graphics()
 	{
 		pContext->Release();
 	}
-	if (pRenderTarget != nullptr)
+	if (pRenderTargetView != nullptr)
 	{
-		pRenderTarget->Release();
+		pRenderTargetView->Release();
 	}
-	if (pDSV != nullptr)
+	if (pDepthStencilView != nullptr)
 	{
-		pDSV->Release();
+		pDepthStencilView->Release();
 	}
 }
 
@@ -135,8 +136,8 @@ void Graphics::EndFrame()
 void Graphics::ClearBuffer(float r, float g, float b, float a)
 {
 	const float color[] = { r,g,b,a };
-	pContext->ClearRenderTargetView(pRenderTarget, color);
-	pContext->ClearDepthStencilView(pDSV, D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	pContext->ClearRenderTargetView(pRenderTargetView, color);
+	pContext->ClearDepthStencilView(pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 void Graphics::DrawIndexed(UINT count)
@@ -144,6 +145,7 @@ void Graphics::DrawIndexed(UINT count)
 	pContext->DrawIndexed(count, 0u, 0u);
 }
 
+//Projection matrix
 void Graphics::SetProjection(DirectX::FXMMATRIX _projection)
 {
 	projection = _projection;
@@ -154,6 +156,7 @@ DirectX::XMMATRIX Graphics::GetProjection() const
 	return projection;
 }
 
+//View matrix
 void Graphics::SetCamera(DirectX::FXMMATRIX _camera)
 {
 	camera = _camera;

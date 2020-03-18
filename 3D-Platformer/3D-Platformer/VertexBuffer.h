@@ -16,7 +16,7 @@ public:
 		vertexBufferDesc.MiscFlags = 0u;
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = {};										//Clear the memory in the vertex buffer
-		vertexBufferData.pSysMem = vertices.data();												//The data to place into the buffer		
+		vertexBufferData.pSysMem = vertices.data();											//The data to place into the buffer		
 		GetDevice(gfx)->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &pVertexBuffer);	//Create the buffer
 	}
 	~VertexBuffer();

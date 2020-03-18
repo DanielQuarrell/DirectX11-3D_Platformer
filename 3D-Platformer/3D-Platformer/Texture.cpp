@@ -14,7 +14,7 @@ Texture::Texture(Graphics& gfx, const std::wstring& textureName)
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	GetDevice(gfx)->CreateSamplerState(&sampDesc, &pSamplerLinear);
+	GetDevice(gfx)->CreateSamplerState(&sampDesc, &pSamplerPoint);
 }
 
 Texture::~Texture()
@@ -24,14 +24,14 @@ Texture::~Texture()
 		pTextureView->Release();
 	}
 
-	if (pSamplerLinear != nullptr)
+	if (pSamplerPoint != nullptr)
 	{
-		pSamplerLinear->Release();
+		pSamplerPoint->Release();
 	}
 }
 
 void Texture::Bind(Graphics& gfx) noexcept
 {
 	GetContext(gfx)->PSSetShaderResources(0u, 1u, &pTextureView);
-	GetContext(gfx)->PSSetSamplers(0u, 1u, &pSamplerLinear);
+	GetContext(gfx)->PSSetSamplers(0u, 1u, &pSamplerPoint);
 }

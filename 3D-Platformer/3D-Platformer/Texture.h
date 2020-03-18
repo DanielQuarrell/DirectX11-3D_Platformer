@@ -11,5 +11,5 @@ public:
 	void Bind(Graphics& gfx) noexcept override;
 protected:
 	ID3D11ShaderResourceView* pTextureView = nullptr;
-	ID3D11SamplerState* pSamplerLinear = nullptr;
+	ID3D11SamplerState* pSamplerPoint = nullptr;
 };
