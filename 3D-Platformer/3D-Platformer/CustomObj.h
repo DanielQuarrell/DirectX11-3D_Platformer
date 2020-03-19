@@ -44,24 +44,6 @@ private:
 	std::vector<Material> materials;
 	std::vector<SurfaceMaterial> surfaceMaterials;
 
-	//Position
-	float xPos = 0.0f;
-	float yPos = 0.0f;
-	float zPos = 0.0f;
-
-	//Scale
-	float xScale = 1.0f;
-	float yScale = 1.0f;
-	float zScale = 1.0f;
-
-	//Rotation
-	float xRot = 0.0f;
-	float yRot = 0.0f;
-	float zRot = 0.0f;
-
-	//Model transform
-	DirectX::XMFLOAT3X3 modelTransform;
-
 	bool hasNormals;
 	bool hasTexture;
 	float totalFaces;

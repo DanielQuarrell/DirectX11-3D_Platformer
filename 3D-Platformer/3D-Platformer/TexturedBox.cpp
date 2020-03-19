@@ -11,12 +11,13 @@
 #include "Texture.h"
 
 TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, float _y, float _z) :
-	textureName(_textureName),
-	xPos(_x),
-	yPos(_y),
-	zPos(_z)
+	textureName(_textureName)
 {
-	//Create the vertex buffer
+	xPos = _x;
+	yPos = _y;
+	zPos = _z;
+
+	//Define the verticies
 	const float side = 0.5f;
 	vertices = std::vector<Vertex>
 	{
@@ -157,13 +158,6 @@ TexturedBox::TexturedBox(Graphics& gfx, std::wstring _textureName, float _x, flo
 	
 	CreateBoundingBox(verticePositions);
 	CalculateAABB(GetTransformXM());
-}
-
-void TexturedBox::SetPosition(float _x, float _y, float _z)
-{
-	xPos = _x;
-	yPos = _y;
-	zPos = _z;
 }
 
 void TexturedBox::Update(float dt) noexcept

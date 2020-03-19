@@ -154,6 +154,8 @@ void Game::UpdateFrame()
 		}
 	}
 
+	player->SetGrounded(false);
+
 	for (auto& box : boxes)
 	{
 		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
@@ -161,6 +163,22 @@ void Game::UpdateFrame()
 		DirectX::XMVECTOR bMin = box->GetBBMinVertex();
 		DirectX::XMVECTOR bMax = box->GetBBMaxVertex();
 		
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
+			DirectX::XMVECTOR bCenter = box->GetCenterVertex();
+
+			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
+		}
+	}
+
+	for (auto& box : boxes)
+	{
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = box->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = box->GetBBMaxVertex();
+
 		if (CheckCollision(aMin, aMax, bMin, bMax))
 		{
 			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
@@ -198,9 +216,6 @@ void Game::UpdateFrame()
 			collectable->SetVisibility(false);
 		}
 	}
-
-
-	player->Update(dt);
 	
 	//Camera movement
 	UpdateCamera(dt);
@@ -274,6 +289,7 @@ void Game::UpdatePlayer(float dt)
 	player->SetPlayerInput(horizontal, verticle);
 	player->SetRotationY(playerRotation * dt);
 	player->ApplyGravity(dt);
+	player->Update(dt);
 }
 
 void Game::UpdateCamera(float dt)
@@ -318,16 +334,14 @@ void Game::CalculateDirection(
 	float zPositive = dx::XMVectorGetZ(bCenter) - dx::XMVectorGetZ(aCenter);
 	float zNegative = (dx::XMVectorGetZ(bCenter) - dx::XMVectorGetZ(aCenter)) * -1;
 
-	float highestAxis = max(max(max(xPositive, xNegative), max(yPositive, yNegative)), max(zPositive, zNegative));
+	float entryAxis = max(max(max(xPositive, xNegative), max(yPositive, yNegative)), max(zPositive, zNegative));
 
-
-	//distance between the moving object and the stationary object in terms of when the moving object would "enter" the colliding object
+	//Distance of the intesection of two objects for each axis
 	float xEntryDistance = 0;
 	float yEntryDistance = 0;
 	float zEntryDistance = 0;
 
-	// Find the distance between the objects on the near and far sides for both x and y and z
-	// Depending on the direction of the velocity, we'll reverse the calculation order to maintain the right sign (positive/negative).
+	//Determine the entry distance based on 
 	if (xPositive > xNegative)
 	{
 		xEntryDistance = dx::XMVectorGetX(bMin) - dx::XMVectorGetX(aMax);
@@ -359,22 +373,25 @@ void Game::CalculateDirection(
 	float yVel = dx::XMVectorGetY(player->GetVelocity());
 	float zVel = dx::XMVectorGetZ(player->GetVelocity());
 
-	if (highestAxis < 1.0f)
+	if (yPositive == entryAxis || yNegative == entryAxis)
 	{
-		if (xPositive == highestAxis || xNegative == highestAxis)
+		yVel = 0;
+		player->SetGrounded(true);
+		player->MovePosition(0, yEntryDistance, 0);
+	}
+
+	float aHeight = DirectX::XMVectorGetY(aMax) - DirectX::XMVectorGetY(aMin);
+
+	//Don't check side collisions on objects beneath the player
+	if (DirectX::XMVectorGetY(aCenter) - (aHeight / 2) < DirectX::XMVectorGetY(bCenter))
+	{
+		if (xPositive == entryAxis || xNegative == entryAxis)
 		{
 			xVel = 0;
 			player->MovePosition(xEntryDistance, 0, 0);
 		}
 
-		if (yPositive == highestAxis || yNegative == highestAxis)
-		{
-			yVel = 0;
-			player->SetGrounded(true);
-			player->MovePosition(0, yEntryDistance, 0);
-		}
-
-		if (zPositive == highestAxis || zNegative == highestAxis)
+		if (zPositive == entryAxis || zNegative == entryAxis)
 		{
 			zVel = 0;
 			player->MovePosition(0, 0, zEntryDistance);

@@ -59,9 +59,6 @@ private:
 	float yRot = 0.0f;
 	float zRot = 0.0f;
 
-	//Model transform
-	DirectX::XMFLOAT3X3 modelTransform;
-
 	bool hasNormals;
 	bool hasTexture;
 	float totalFaces;

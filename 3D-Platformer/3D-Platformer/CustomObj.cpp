@@ -11,15 +11,16 @@
 #include "Texture.h"
 
 CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y, float _z, float _yRot, float _xScale, float _yScale, float _zScale, bool _hasTexture, bool _hasLighting) :
-	modelName(_modelName),
-	xPos(_x),
-	yPos(_y),
-	zPos(_z),
-	yRot(_yRot),
-	xScale(_xScale),
-	yScale(_yScale),
-	zScale(_zScale)
+	modelName(_modelName)
 {
+	xPos = _x;
+	yPos = _y;
+	zPos = _z;
+	yRot = _yRot;
+	xScale = _xScale;
+	yScale = _yScale;
+	zScale = _zScale;
+
 	if (!IsStaticInitialised())
 	{
 		LoadObjModel(_modelName);

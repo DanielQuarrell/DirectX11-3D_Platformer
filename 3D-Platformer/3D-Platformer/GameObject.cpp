@@ -1,5 +1,7 @@
 #include "GameObject.h"
 #include "IndexBuffer.h"
+#include <string>
+#include <iostream>
 
 void GameObject::Draw(Graphics& gfx) const noexcept
 {
@@ -82,7 +84,7 @@ void GameObject::CalculateAABB(DirectX::XMMATRIX transformMatrix)
 	for (UINT i = 0; i < bbVertices.size(); i++)
 	{
 		//Transform the bounding boxes vertices to the objects world space
-		DirectX::XMVECTOR vert = DirectX::XMVectorSet(bbVertices[i].x, bbVertices[i].y, bbVertices[i].z, 0.0f);
+		DirectX::XMVECTOR vert = DirectX::XMVectorSet(bbVertices[i].x, bbVertices[i].y, bbVertices[i].z, 1.0f);
 		vert = DirectX::XMVector3TransformCoord(vert, transformMatrix);
 
 		//Get the smallest vertex 
@@ -113,6 +115,11 @@ void GameObject::CalculateAABB(DirectX::XMMATRIX transformMatrix)
 	bbMaxVertex = DirectX::XMVectorSet(maxVertex.x, maxVertex.y, maxVertex.z, 0.0f);
 }
 
+DirectX::XMVECTOR GameObject::GetPosition()
+{
+	return DirectX::XMVectorSet(xPos, yPos, zPos, 0.0f);
+}
+
 DirectX::XMVECTOR GameObject::GetBBMinVertex()
 {
 	return bbMinVertex;
@@ -126,6 +133,13 @@ DirectX::XMVECTOR GameObject::GetBBMaxVertex()
 DirectX::XMVECTOR GameObject::GetCenterVertex()
 {
 	return centerVertex;
+}
+
+void GameObject::SetPosition(float _x, float _y, float _z)
+{
+	xPos = _x;
+	yPos = _y;
+	zPos = _z;
 }
 
 void GameObject::SetVisibility(bool _isVisible)

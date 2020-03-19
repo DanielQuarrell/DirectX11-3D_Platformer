@@ -1,5 +1,7 @@
 #include "Player.h"
 #include <cmath>
+#include <iostream>
+#include <string>
 //Bindables
 #include "ConstantBuffers.h"
 #include "IndexBuffer.h"
@@ -11,11 +13,12 @@
 #include "VertexShader.h"
 #include "Texture.h"
 
-Player::Player(Graphics& gfx, float _x, float _y, float _z) :
-	xPos(_x),
-	yPos(_y),
-	zPos(_z)
+Player::Player(Graphics& gfx, float _x, float _y, float _z)
 {
+	xPos = _x;
+	yPos = _y;
+	zPos = _z;
+
 	//Create the vertex buffer
 	const float side = 0.5f;
 	vertices = std::vector<Vertex>
@@ -150,6 +153,7 @@ Player::Player(Graphics& gfx, float _x, float _y, float _z) :
 	);
 
 	std::vector<DirectX::XMFLOAT3> verticePositions;
+
 	for (int i = 0; i < vertices.size(); i++)
 	{
 		verticePositions.push_back(vertices[i].pos);
@@ -173,13 +177,6 @@ void Player::SetPlayerInput(float _horizontal, float _verticle)
 
 	xVel = verticleX + horizontalX;
 	zVel = verticleZ + horizontalZ;
-
-	CalculateAABB(GetTransformXM());
-}
-
-void Player::MultiplyVelocity(float multiplier)
-{
-	yVel *= multiplier;
 }
 
 void Player::Jump()
@@ -210,33 +207,18 @@ void Player::SetSpawnPosition(float _x, float _y, float _z)
 	spawnZ = _z;
 }
 
-void Player::SetPosition(float _x, float _y, float _z)
-{
-	xPos = _x;
-	yPos = _y;
-	zPos = _z;
-}
-
 void Player::MovePosition(float _x, float _y, float _z)
 {
 	xPos += _x;
 	yPos += _y;
 	zPos += _z;
-}
 
-void Player::SetRotationX(float angle)
-{
-	xRot += angle;
+	CalculateAABB(GetTransformXM());
 }
 
 void Player::SetRotationY(float angle)
 {
 	yRot += angle * rotationSpeed;
-}
-
-void Player::SetRotationZ(float angle)
-{
-	zRot += angle;
 }
 
 void Player::ApplyGravity(float dt)
@@ -251,10 +233,13 @@ void Player::Update(float dt) noexcept
 		xPos += xVel * dt;
 		yPos += yVel * dt;
 		zPos += zVel * dt;
-
-		CalculateAABB(GetTransformXM());
 	}
 
+	CalculateAABB(GetTransformXM());
+	//std::string BB_log = "Min: (" + std::to_string(DirectX::XMVectorGetX(bbMinVertex)) + "," + std::to_string(DirectX::XMVectorGetY(bbMinVertex)) + "," + std::to_string(DirectX::XMVectorGetZ(bbMinVertex)) + ")\n Max: (" + std::to_string(DirectX::XMVectorGetX(bbMaxVertex)) + "," + std::to_string(DirectX::XMVectorGetY(bbMaxVertex)) + "," + std::to_string(DirectX::XMVectorGetZ(bbMaxVertex)) + ")\n";
+	//OutputDebugStringA(BB_log.c_str());
+
+	//Respawn
 	if (yPos < 0)
 	{
 		xPos = spawnX;
@@ -281,11 +266,6 @@ DirectX::XMMATRIX Player::GetTransformXM() const noexcept
 DirectX::XMVECTOR Player::GetVelocity()
 {
 	return DirectX::XMVectorSet(xVel, yVel, zVel, 0.0f);
-}
-
-DirectX::XMVECTOR Player::GetPosition()
-{
-	return DirectX::XMVectorSet(xPos, yPos, zPos, 0.0f);
 }
 
 

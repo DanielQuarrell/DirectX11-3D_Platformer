@@ -175,7 +175,7 @@ Box::Box(Graphics& gfx, float _x, float _y, float _z) :
 	//Model deformation transform (Instance)
 	DirectX::XMStoreFloat3x3(
 		&modelTransform,
-		DirectX::XMMatrixScaling(1.0f, 1.0f, 1.0f)
+		DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f)
 	);
 }
 
