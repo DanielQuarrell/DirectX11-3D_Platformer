@@ -10,7 +10,8 @@ Game::Game() : wnd(800, 600, "DirectX 3D Platformer")
 	camera = std::make_unique<Camera>(player.get());
 	colourbox = std::make_unique<Box>(wnd.Gfx(), 0.0f, 0.0f, 0.0f);
 
-	InitialiseLevel(3);
+	InitialiseLevel(levelNum);
+
 	//Set projection and camera
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 	wnd.DisableCursor();
@@ -33,8 +34,19 @@ int Game::Start()
 	}
 }
 
+void Game::ClearLevel()
+{
+	boxes.clear();
+	bridge.clear();
+	collectables.clear();
+	pressurePlate.reset();
+	goal.reset();
+}
+
 void Game::InitialiseLevel(int level_num)
 {
+	ClearLevel();
+
 	std::string levelFileName = "";
 	std::fstream levelFile;
 	levelFileName.append("Resources\\Level" + std::to_string(level_num) + ".txt");
@@ -46,8 +58,11 @@ void Game::InitialiseLevel(int level_num)
 	levelFile.open(levelFileName);
 	itemFile.open(itemFileName);
 
-	float levelWidth = 13;
-	float levelHeight = 30;
+	float levelWidth = 0;
+	float levelHeight = 0;
+
+	levelFile >> levelWidth;
+	levelFile >> levelHeight;
 
 	float x = 0;
 	float y = 0;
@@ -111,6 +126,7 @@ void Game::InitialiseLevel(int level_num)
 		{
 			//error with file loading
 			levelFile.close();
+			itemFile.close();
 			return;
 		}
 
@@ -125,16 +141,31 @@ void Game::InitialiseLevel(int level_num)
 
 	}
 	levelFile.close();
+	itemFile.close();
 	return;
 }
 
 void Game::UpdateFrame()
 {
-	auto dt = timer.Mark();
+	float dt = timer.Mark();
 	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f, 1.0f);
 
 	//Player movement
 	UpdatePlayer(dt);
+
+	if (levelNum < 3)
+	{
+		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
+		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
+		DirectX::XMVECTOR bMin = goal->GetBBMinVertex();
+		DirectX::XMVECTOR bMax = goal->GetBBMaxVertex();
+
+		if (CheckCollision(aMin, aMax, bMin, bMax))
+		{
+			levelNum++;
+			InitialiseLevel(levelNum);
+		}
+	}
 
 	if (!pressurePlate->IsActivated())
 	{
@@ -162,29 +193,13 @@ void Game::UpdateFrame()
 		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
 		DirectX::XMVECTOR bMin = box->GetBBMinVertex();
 		DirectX::XMVECTOR bMax = box->GetBBMaxVertex();
-		
-		if (CheckCollision(aMin, aMax, bMin, bMax))
-		{
-			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
-			DirectX::XMVECTOR bCenter = box->GetCenterVertex();
-
-			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
-		}
-	}
-
-	for (auto& box : boxes)
-	{
-		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
-		DirectX::XMVECTOR aMax = player->GetBBMaxVertex();
-		DirectX::XMVECTOR bMin = box->GetBBMinVertex();
-		DirectX::XMVECTOR bMax = box->GetBBMaxVertex();
 
 		if (CheckCollision(aMin, aMax, bMin, bMax))
 		{
 			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
 			DirectX::XMVECTOR bCenter = box->GetCenterVertex();
 
-			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
+			CollisionResponse(aMin, aMax, bMin, bMax, aCenter, bCenter);
 		}
 	}
 
@@ -200,7 +215,7 @@ void Game::UpdateFrame()
 			DirectX::XMVECTOR aCenter = player->GetCenterVertex();
 			DirectX::XMVECTOR bCenter = bridgePiece->GetCenterVertex();
 
-			CalculateDirection(aMin, aMax, bMin, bMax, aCenter, bCenter);
+			CollisionResponse(aMin, aMax, bMin, bMax, aCenter, bCenter);
 		}
 	}
 
@@ -318,7 +333,7 @@ bool Game::CheckCollision(
 		DirectX::XMVectorGetZ(aMin) < DirectX::XMVectorGetZ(bMax) && DirectX::XMVectorGetZ(aMax) > DirectX::XMVectorGetZ(bMin));
 }
 
-void Game::CalculateDirection(
+void Game::CollisionResponse(
 	DirectX::XMVECTOR aMin, DirectX::XMVECTOR aMax,
 	DirectX::XMVECTOR bMin, DirectX::XMVECTOR bMax,
 	DirectX::XMVECTOR aCenter, DirectX::XMVECTOR bCenter)
@@ -326,13 +341,13 @@ void Game::CalculateDirection(
 	namespace dx = DirectX;
 
 	float xPositive = dx::XMVectorGetX(bCenter) - dx::XMVectorGetX(aCenter);
-	float xNegative = (dx::XMVectorGetX(bCenter) - dx::XMVectorGetX(aCenter)) * -1;
+	float xNegative = dx::XMVectorGetX(aCenter) - dx::XMVectorGetX(bCenter);
 
 	float yPositive = dx::XMVectorGetY(bCenter) - dx::XMVectorGetY(aCenter);
-	float yNegative = (dx::XMVectorGetY(bCenter) - dx::XMVectorGetY(aCenter)) * -1;
+	float yNegative = dx::XMVectorGetY(aCenter) - dx::XMVectorGetY(bCenter);
 
 	float zPositive = dx::XMVectorGetZ(bCenter) - dx::XMVectorGetZ(aCenter);
-	float zNegative = (dx::XMVectorGetZ(bCenter) - dx::XMVectorGetZ(aCenter)) * -1;
+	float zNegative = dx::XMVectorGetZ(aCenter) - dx::XMVectorGetZ(bCenter);
 
 	float entryAxis = max(max(max(xPositive, xNegative), max(yPositive, yNegative)), max(zPositive, zNegative));
 

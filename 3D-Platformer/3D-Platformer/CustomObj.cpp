@@ -21,10 +21,10 @@ CustomObj::CustomObj(Graphics& gfx, std::wstring _modelName, float _x, float _y,
 	yScale = _yScale;
 	zScale = _zScale;
 
+	LoadObjModel(_modelName);
+
 	if (!IsStaticInitialised())
 	{
-		LoadObjModel(_modelName);
-
 		//Calculate normals if Obj doesn't contain them
 		if (!hasNormals)
 		{
