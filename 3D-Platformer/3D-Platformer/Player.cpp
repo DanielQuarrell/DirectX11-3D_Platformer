@@ -236,8 +236,6 @@ void Player::Update(float dt) noexcept
 	}
 
 	CalculateAABB(GetTransformXM());
-	//std::string BB_log = "Min: (" + std::to_string(DirectX::XMVectorGetX(bbMinVertex)) + "," + std::to_string(DirectX::XMVectorGetY(bbMinVertex)) + "," + std::to_string(DirectX::XMVectorGetZ(bbMinVertex)) + ")\n Max: (" + std::to_string(DirectX::XMVectorGetX(bbMaxVertex)) + "," + std::to_string(DirectX::XMVectorGetY(bbMaxVertex)) + "," + std::to_string(DirectX::XMVectorGetZ(bbMaxVertex)) + ")\n";
-	//OutputDebugStringA(BB_log.c_str());
 
 	//Respawn
 	if (yPos < 0)

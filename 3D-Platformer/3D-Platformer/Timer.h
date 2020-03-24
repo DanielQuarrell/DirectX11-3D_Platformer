@@ -1,5 +1,7 @@
 #pragma once
 #include <chrono>
+#include <Windows.h>
+#include <string>
 
 class Timer
 {

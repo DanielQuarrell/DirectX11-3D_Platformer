@@ -70,20 +70,20 @@ void Game::InitialiseLevel(int level_num)
 
 	while (!levelFile.eof())
 	{
-		float fileValue;
+		float levelValue;
 		float itemValue;
 
-		if (levelFile >> fileValue)
+		if (levelFile >> levelValue)
 		{
 			if (itemFile >> itemValue)
 			{
-				if (fileValue != -1.0f)
+				if (levelValue != -1.0f)
 				{
-					if (fileValue >= 0)
+					if (levelValue >= 0)
 					{
-						float numberOfBoxes = fileValue;
+						float levelHeight = levelValue;
 
-						for (int yVal = 0; yVal <= numberOfBoxes; yVal++)
+						for (int yVal = 0; yVal <= levelHeight; yVal++)
 						{
 							y = yVal;
 							boxes.push_back(std::make_unique<TexturedBox>(wnd.Gfx(), L"platform.png", x, y, z));
@@ -91,7 +91,7 @@ void Game::InitialiseLevel(int level_num)
 					}
 					else
 					{
-						y = fileValue * -1;
+						y = levelValue * -1;
 						bridge.push_back(std::make_unique<Bridge>(wnd.Gfx(), L"bridge.png", x, y, z));
 					}
 
@@ -153,6 +153,7 @@ void Game::UpdateFrame()
 	//Player movement
 	UpdatePlayer(dt);
 
+	//Goal
 	if (levelNum < 3)
 	{
 		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
@@ -167,6 +168,7 @@ void Game::UpdateFrame()
 		}
 	}
 
+	//Trigger
 	if (!pressurePlate->IsActivated())
 	{
 		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
@@ -185,6 +187,7 @@ void Game::UpdateFrame()
 		}
 	}
 
+	//Ground collision
 	player->SetGrounded(false);
 
 	for (auto& box : boxes)
@@ -219,6 +222,7 @@ void Game::UpdateFrame()
 		}
 	}
 
+	//Collectables
 	for (auto& collectable : collectables)
 	{
 		DirectX::XMVECTOR aMin = player->GetBBMinVertex();
